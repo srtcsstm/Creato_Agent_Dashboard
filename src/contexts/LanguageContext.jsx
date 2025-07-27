@@ -14,25 +14,42 @@ export const LanguageProvider = ({ children }) => {
     setLoadingTranslations(true);
     setTranslationError(null);
     try {
-      // Corrected path to fetch from the root of the public directory
-      const response = await fetch(`/locales/${lang}/translation.json`);
+      const url = `/locales/${lang}/translation.json`;
+      console.log(`[LanguageContext] Attempting to load translations from: ${url}`);
+      const response = await fetch(url);
+      
       if (!response.ok) {
-        throw new Error(`Failed to load translations for ${lang}`);
+        const errorText = await response.text();
+        throw new Error(`Failed to load translations for ${lang}. Status: ${response.status}, Response: ${errorText}`);
       }
+      
       const data = await response.json();
       setTranslations(data);
       localStorage.setItem('language', lang);
+      console.log(`[LanguageContext] Successfully loaded translations for ${lang}.`);
     } catch (err) {
-      console.error("Error loading translations:", err);
+      console.error(`[LanguageContext] Error loading translations for ${lang}:`, err);
       setTranslationError(err.message);
       // Fallback to English if loading fails
       if (lang !== 'en') {
-        // Corrected path for English fallback
-        const enResponse = await fetch('/locales/en/translation.json');
-        const enData = await enResponse.json();
-        setTranslations(enData);
-        localStorage.setItem('language', 'en');
-        setCurrentLanguage('en');
+        console.warn(`[LanguageContext] Falling back to English translations due to error for ${lang}.`);
+        try {
+          const enUrl = '/locales/en/translation.json';
+          console.log(`[LanguageContext] Attempting to load English fallback from: ${enUrl}`);
+          const enResponse = await fetch(enUrl);
+          if (!enResponse.ok) {
+            const enErrorText = await enResponse.text();
+            throw new Error(`Failed to load English fallback translations. Status: ${enResponse.status}, Response: ${enErrorText}`);
+          }
+          const enData = await enResponse.json();
+          setTranslations(enData);
+          localStorage.setItem('language', 'en');
+          setCurrentLanguage('en');
+          console.log(`[LanguageContext] Successfully loaded English fallback translations.`);
+        } catch (enErr) {
+          console.error(`[LanguageContext] Critical: Failed to load even English fallback translations:`, enErr);
+          setTranslationError(enErr.message);
+        }
       }
     } finally {
       setLoadingTranslations(false);
@@ -54,13 +71,13 @@ export const LanguageProvider = ({ children }) => {
       if (text && typeof text === 'object' && p in text) {
         text = text[p];
       } else {
-        console.warn(`Translation key "${key}" not found. Falling back to key.`);
+        // console.warn(`[LanguageContext] Translation key "${key}" not found. Falling back to key.`);
         return key; // Fallback to key if not found
       }
     }
 
     if (typeof text !== 'string') {
-      console.warn(`Translation for key "${key}" is not a string.`);
+      // console.warn(`[LanguageContext] Translation for key "${key}" is not a string.`);
       return key;
     }
 

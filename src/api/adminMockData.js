@@ -175,6 +175,17 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
     });
   }
 
+  // Handle generic 'where' clause for filtering, specifically for 'status'
+  if (options.where) {
+    // This is a simplified parser for the specific (status,eq,unread) case.
+    // For more complex 'where' clauses, a more robust parser would be needed.
+    const statusUnreadMatch = options.where.match(/\(status,eq,unread\)/);
+    if (statusUnreadMatch) {
+      filteredCollection = filteredCollection.filter(item => item.status === 'unread');
+    }
+    // Add more conditions here if other specific 'where' clauses are expected
+  }
+
   return filteredCollection;
 };
 

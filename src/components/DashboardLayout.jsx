@@ -98,6 +98,7 @@ function DashboardLayout() {
     const getUnreadCount = async () => {
       if (clientId) {
         try {
+          // Fetch only notifications with status 'unread'
           const notifications = await fetchNocoDBData('notifications', clientId, {
             where: '(status,eq,unread)'
           });

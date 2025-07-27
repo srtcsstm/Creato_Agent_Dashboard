@@ -23,7 +23,7 @@
     "totalMessages": "Toplam Mesaj Sayısı",
     "totalCalls": "Toplam Çağrı Sayısı",
     "totalCallDuration": "Toplam Çağrı Süresi (dk)",
-    "leadsCaptured": "Toplanan Lead Sayısı",
+    "leadsCaptured": "Potansiyel Müşteriler",
     "increase": "Artış",
     "decrease": "Azalış",
     "faster": "Daha Hızlı",
@@ -107,7 +107,7 @@
     "details": "Detaylar"
   },
   "leadsPage": {
-    "title": "Yakalanan Potansiyel Müşteriler",
+    "title": "Potansiyel Müşteriler",
     "exportToCsv": "CSV'ye Aktar",
     "name": "Ad",
     "email": "E-posta",
@@ -115,7 +115,7 @@
     "interest": "İlgi Alanı",
     "timestamp": "Zaman Damgası",
     "noLeadsFound": "Potansiyel müşteri bulunamadı.",
-    "loadingLeads": "Potansiyel müşteriler yükleniyor...",
+    "loadingLeads": "Potansiyel müşteriler yükleniyor.",
     "noLeadsToExport": "Aktarılacak potansiyel müşteri yok.",
     "browserNotSupportDownload": "Tarayıcınız doğrudan dosya indirmeyi desteklemiyor. Lütfen verileri manuel olarak kopyalayın."
   },

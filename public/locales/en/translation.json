@@ -23,7 +23,7 @@
     "totalMessages": "Total Messages",
     "totalCalls": "Total Calls",
     "totalCallDuration": "Total Call Duration (min)",
-    "leadsCaptured": "Leads Captured",
+    "leadsCaptured": "Leads",
     "increase": "Increased",
     "decrease": "Decreased",
     "faster": "Faster",
@@ -107,7 +107,7 @@
     "details": "Details"
   },
   "leadsPage": {
-    "title": "Captured Leads",
+    "title": "Leads",
     "exportToCsv": "Export to CSV",
     "name": "Name",
     "email": "Email",

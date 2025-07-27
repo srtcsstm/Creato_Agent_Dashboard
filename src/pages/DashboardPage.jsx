@@ -10,7 +10,7 @@ import {
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 
 // Import the new content components
 import OverviewContent from '../components/dashboard/OverviewContent';
@@ -47,35 +47,31 @@ function a11yProps(index) {
 
 function DashboardPage() {
   const { t } = useLanguage();
-  const location = useLocation(); // Get location object
+  const location = useLocation();
+  const navigate = useNavigate(); // Initialize navigate hook
   const [value, setValue] = useState(0); // State for active tab
   const theme = useTheme();
+
+  // Map tab index to tab parameter string
+  const tabIndexToParam = ['overview', 'analytics', 'reports', 'notifications'];
 
   // Determine initial tab based on URL query parameter
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const tabParam = queryParams.get('tab');
-    switch (tabParam) {
-      case 'overview':
-        setValue(0);
-        break;
-      case 'analytics':
-        setValue(1);
-        break;
-      case 'reports':
-        setValue(2);
-        break;
-      case 'notifications':
-        setValue(3);
-        break;
-      default:
-        setValue(0); // Default to Overview
-        break;
+    const index = tabIndexToParam.indexOf(tabParam);
+    if (index !== -1) {
+      setValue(index);
+    } else {
+      setValue(0); // Default to Overview
     }
   }, [location.search]); // Re-run when URL query changes
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+    // Update URL with the new tab parameter
+    const newTabParam = tabIndexToParam[newValue];
+    navigate(`?tab=${newTabParam}`, { replace: true }); // Use replace to avoid cluttering history
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { verifyUserCredentials } from '../api/nocodb'; // Import the new verification function
+import { verifyUserCredentials, verifyAdminCredentials } from '../api/nocodb'; // Import the new verification function
 
 const AuthContext = createContext(null);
 
@@ -41,14 +41,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginAdmin = () => {
-    localStorage.setItem('isAdminLoggedIn', 'true');
-    localStorage.removeItem('clientId');
-    localStorage.removeItem('apiKey');
-    setIsAdminAuthenticated(true);
-    setIsAuthenticated(false);
-    setClientId(null);
-    setApiKey(null);
+  const loginAdmin = async (username, password) => {
+    const adminVerified = await verifyAdminCredentials(username, password);
+    if (adminVerified) {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      localStorage.removeItem('clientId');
+      localStorage.removeItem('apiKey');
+      setIsAdminAuthenticated(true);
+      setIsAuthenticated(false);
+      setClientId(null);
+      setApiKey(null);
+      return true; // Admin login successful
+    } else {
+      setIsAdminAuthenticated(false);
+      return false; // Admin login failed
+    }
   };
 
   const logout = () => {

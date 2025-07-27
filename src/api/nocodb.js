@@ -12,6 +12,7 @@ const TABLE_IDS = {
   payments: 'm39e2un4o1csvdf',
   users: 'mibi4jb9jlcmz3p',
   notifications: 'mjlfirm2j2hp7f0', // Yeni bildirimler tablosu ID'si
+  admins: 'mfom95vyaoetfxq', // Yeni admin tablosu ID'si
 };
 
 // Doğru tablo ID'sini almak için yardımcı fonksiyon
@@ -174,5 +175,18 @@ export const verifyUserCredentials = async (clientId, passwordHash) => {
   } catch (error) {
     console.error("Kullanıcı kimlik bilgileri doğrulanırken hata oluştu:", error);
     return null;
+  }
+};
+
+// NocoDB'ye karşı yönetici kimlik bilgilerini doğrulamak için yeni fonksiyon
+export const verifyAdminCredentials = async (email, passwordHash) => {
+  try {
+    const admins = await fetchNocoDBData('admins', null, {
+      where: `(email,eq,${email})~and(password_hash,eq,${passwordHash})`
+    });
+    return admins.length > 0; // Yönetici bulunursa true, aksi takdirde false döndür
+  } catch (error) {
+    console.error("Yönetici kimlik bilgileri doğrulanırken hata oluştu:", error);
+    return false;
   }
 };

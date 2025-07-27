@@ -12,8 +12,8 @@ const LoginPage = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [clientIdInput, setClientIdInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
-  const [adminUsername, setAdminUsername] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [adminUsername, setAdminUsername] = useState(''); // This will now be used for email
+  const [adminPassword, setAdminPassword] = useState(''); // This will now be used for password_hash
   const [error, setError] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const navigate = useNavigate();
@@ -42,9 +42,10 @@ const LoginPage = () => {
     setError('');
 
     if (showAdminLogin) {
-      // Admin Login Check
-      if (adminUsername === 'admin' && adminPassword === 'admin') {
-        loginAdmin();
+      // Admin Login Check using NocoDB
+      // Pass adminUsername as email and adminPassword as password_hash
+      const adminLoginSuccess = await loginAdmin(adminUsername, adminPassword);
+      if (adminLoginSuccess) {
         navigate('/admin');
         return;
       } else {

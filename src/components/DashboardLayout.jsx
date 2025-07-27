@@ -97,20 +97,26 @@ function DashboardLayout() {
   useEffect(() => {
     const getUnreadCount = async () => {
       if (clientId) {
+        console.log(`[DashboardLayout] Fetching all notifications for clientId: ${clientId}`);
         try {
-          // Fetch only notifications with status 'unread'
-          const notifications = await fetchNocoDBData('notifications', clientId, {
-            where: '(status,eq,unread)'
-          });
-          setUnreadNotificationsCount(notifications.length);
+          // Fetch ALL notifications for the client
+          const allNotifications = await fetchNocoDBData('notifications', clientId);
+          // Filter and count unread notifications client-side
+          const unread = allNotifications.filter(notif => notif.status === 'unread');
+          console.log(`[DashboardLayout] Fetched total notifications: ${allNotifications.length}, Unread count: ${unread.length}`);
+          setUnreadNotificationsCount(unread.length);
         } catch (error) {
-          console.error("Failed to fetch unread notifications count:", error);
+          console.error("Failed to fetch notifications count:", error);
           setUnreadNotificationsCount(0);
         }
+      } else {
+        // If clientId is null, there are no client-specific notifications
+        setUnreadNotificationsCount(0);
       }
     };
 
     getUnreadCount();
+    // Fetch unread count every minute
     const interval = setInterval(getUnreadCount, 60000);
     return () => clearInterval(interval);
   }, [clientId, location.pathname]);
@@ -337,8 +343,8 @@ function DashboardLayout() {
                 color="inherit"
                 onClick={() => navigate('/dashboard?tab=notifications')}
               >
-                <Badge badgeContent={unreadNotificationsCount} color="error">
-                  <NotificationsIcon />
+                <Badge badgeContent={unreadNotificationsCount} color="error" invisible={unreadNotificationsCount === 0}>
+                  <NotificationsIcon sx={{ color: unreadNotificationsCount > 0 ? theme.palette.error.main : theme.palette.text.secondary }} />
                 </Badge>
               </IconButton>
 

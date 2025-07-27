@@ -120,13 +120,14 @@ let mockPayments = [
   { id: 'pay_5', client_id: 'client_001', invoice_id: 'inv_21', amount: 299.00, status: 'completed', payment_date: getRecentDate(3, 0, 0), created_date: getRecentDate(3, 0, 0) },
 ];
 
+// Updated mockNotifications with mixed statuses
 let mockNotifications = [
   { id: 'notif_1', client_id: 'client_001', type: 'lead', title: 'Yeni lead oluşturuldu', description: 'Facebook üzerinden yeni bir lead toplandı.', status: 'unread', created_date: getRecentDate(0, 0, 1), link: '/leads', priority: 'normal', source_id: 'lead_1' },
   { id: 'notif_2', client_id: 'client_001', type: 'call', title: 'Çağrı tamamlandı', description: '3 dakikalık bir çağrı görüşmesi sona erdi.', status: 'read', created_date: getRecentDate(0, 0, 10), link: '/calls', priority: 'low', source_id: 'call_1' },
-  { id: 'notif_3', client_id: 'client_002', type: 'offer', title: 'Yeni teklif hazırlandı', description: 'Domates hattı projesi için teklif sunuldu.', status: 'unread', created_date: getRecentDate(1, 0, 0), link: '/proposals', priority: 'high', source_id: 'off_3' },
-  { id: 'notif_4', client_id: 'client_001', type: 'invoice', title: 'Yeni fatura oluşturuldu', description: 'INV-2024-001 numaralı fatura oluşturuldu.', status: 'unread', created_date: getRecentDate(1, 1, 0), link: '/invoices', priority: 'normal', source_id: 'inv_1' },
+  { id: 'notif_3', client_id: 'client_001', type: 'offer', title: 'Yeni teklif hazırlandı', description: 'Domates hattı projesi için teklif sunuldu.', status: 'unread', created_date: getRecentDate(1, 0, 0), link: '/proposals', priority: 'high', source_id: 'off_3' },
+  { id: 'notif_4', client_id: 'client_001', type: 'invoice', title: 'Yeni fatura oluşturuldu', description: 'INV-2024-001 numaralı fatura oluşturuldu.', status: 'read', created_date: getRecentDate(1, 1, 0), link: '/invoices', priority: 'normal', source_id: 'inv_1' },
   { id: 'notif_5', client_id: 'client_001', type: 'system', title: 'Sistem Bakımı', description: 'Planlı sistem bakımı bu gece 02:00-04:00 arası yapılacaktır.', status: 'unread', created_date: getRecentDate(2, 0, 0), link: '#', priority: 'high', source_id: 'sys_1' },
-  { id: 'notif_6', client_id: 'client_001', type: 'lead', title: 'Yeni lead', description: 'Web sitesinden yeni bir lead geldi.', status: 'unread', created_date: getRecentDate(2, 2, 0), link: '/leads', priority: 'normal', source_id: 'lead_2' },
+  { id: 'notif_6', client_id: 'client_001', type: 'lead', title: 'Yeni lead', description: 'Web sitesinden yeni bir lead geldi.', status: 'read', created_date: getRecentDate(2, 2, 0), link: '/leads', priority: 'normal', source_id: 'lead_2' },
 ];
 
 
@@ -151,12 +152,17 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
     default: return [];
   }
 
+  console.log(`[mockFetch] Initial collection for ${tableName}: ${collection.length} items.`);
+
   let filteredCollection = collection;
 
+  // Apply client_id filter first if present
   if (clientId) {
     filteredCollection = filteredCollection.filter(item => item.client_id === clientId);
+    console.log(`[mockFetch] After client_id filter (${clientId}): ${filteredCollection.length} items.`);
   }
 
+  // Apply date range filter
   if (options.startDate && options.endDate) {
     const startDateObj = new Date(options.startDate);
     const endDateObj = new Date(options.endDate);
@@ -173,17 +179,38 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
 
       return itemDateOnly >= startDateOnly && itemDateOnly <= endDateOnly;
     });
+    console.log(`[mockFetch] After date range filter (${options.startDate} to ${options.endDate}): ${filteredCollection.length} items.`);
   }
 
-  // Handle generic 'where' clause for filtering, specifically for 'status'
+  // Apply generic 'where' clause for filtering (more robust parsing)
   if (options.where) {
-    // This is a simplified parser for the specific (status,eq,unread) case.
-    // For more complex 'where' clauses, a more robust parser would be needed.
-    const statusUnreadMatch = options.where.match(/\(status,eq,unread\)/);
-    if (statusUnreadMatch) {
-      filteredCollection = filteredCollection.filter(item => item.status === 'unread');
+    const conditions = options.where.split('~and'); // Split by '~and' for multiple conditions
+    for (const condition of conditions) {
+      const match = condition.match(/\(([^,]+),([^,]+),([^)]+)\)/); // Regex to extract field, operator, value
+      if (match) {
+        const [, field, operator, value] = match;
+        // Remove 'exactDate,' prefix if present in value (for date filters)
+        const cleanValue = value.startsWith('exactDate,') ? value.substring('exactDate,'.length) : value;
+
+        if (operator === 'eq') {
+          filteredCollection = filteredCollection.filter(item => String(item[field]) === cleanValue);
+        } else if (operator === 'ge') { // Greater than or equal
+          filteredCollection = filteredCollection.filter(item => {
+            const itemDate = new Date(item[field]);
+            const filterDate = new Date(cleanValue);
+            return itemDate >= filterDate;
+          });
+        } else if (operator === 'le') { // Less than or equal
+          filteredCollection = filteredCollection.filter(item => {
+            const itemDate = new Date(item[field]);
+            const filterDate = new Date(cleanValue);
+            return itemDate <= filterDate;
+          });
+        }
+        // Add more operators if needed (e.g., 'gt', 'lt', 'ne', 'like')
+        console.log(`[mockFetch] After '${field}' ${operator} '${cleanValue}' filter: ${filteredCollection.length} items.`);
+      }
     }
-    // Add more conditions here if other specific 'where' clauses are expected
   }
 
   return filteredCollection;

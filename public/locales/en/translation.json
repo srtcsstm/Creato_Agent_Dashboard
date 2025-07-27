@@ -1,0 +1,36 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "notifications": "Notifications",
+    "totalMessages": "Total Messages",
+    "totalCalls": "Total Calls",
+    "leadsCaptured": "Leads Captured",
+    "outstandingPaymentAmount": "Outstanding Balance",
+    "totalOffers": "Total Offers",
+    "dailyMessageCount": "Daily Messages",
+    "dailyCallCount": "Daily Calls",
+    "recentInteractions": "Recent Conversations",
+    "recentProposals": "Recent Proposals",
+    "noCallData": "No call activity yet",
+    "increase": "Increased",
+    "decrease": "Decreased"
+  },
+  "common": {
+    "logout": "Logout"
+  },
+  "settingsPage": {
+    "title": "Settings"
+  },
+  "conversationsPage": {
+    "title": "Conversations"
+  },
+  "callsPage": {
+    "title": "Call Records"
+  },
+  "leadsPage": {
+    "title": "Captured Leads"
+  }
+}

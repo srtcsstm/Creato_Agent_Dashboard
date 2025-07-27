@@ -23,12 +23,12 @@ import DescriptionIcon from '@mui/icons-material/Description'; // For 'offer'
 import CallIcon from '@mui/icons-material/Call'; // For 'call'
 
 import { useLanguage } from '../../contexts/LanguageContext';
-import { formatDateToDDMMYYYYHHMM } from '../../utils/dateUtils';
+import { formatDateToDDMMYYYYHHMM, formatDateToYYYYMMDD, getStartDateForDaysAgo } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
 import { fetchNocoDBData, updateNocoDBData, deleteNocoDBData } from '../../api/nocodb'; // Import NocoDB API functions
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
-function NotificationsContent() {
+function NotificationsContent({ selectedDays }) { // Receive selectedDays prop
   const { t } = useLanguage();
   const { clientId } = useAuth(); // Get clientId from AuthContext
   const [notifications, setNotifications] = useState([]);
@@ -40,12 +40,17 @@ function NotificationsContent() {
   const loadNotifications = async () => {
     setLoading(true);
     setError(null);
+
+    const endDate = formatDateToYYYYMMDD(new Date());
+    const startDate = getStartDateForDaysAgo(selectedDays);
+
     try {
-      const data = await fetchNocoDBData('notifications', clientId);
-      // Sort notifications by created_at in descending order
+      // Pass selectedDays to fetchNocoDBData for conditional filtering logic
+      const data = await fetchNocoDBData('notifications', clientId, { startDate, endDate, selectedDays });
+      // Sort notifications by created_date in descending order
       const sortedData = data.sort((a, b) => {
-        const dateA = new Date(a.created_at);
-        const dateB = new Date(b.created_at);
+        const dateA = new Date(a.created_date);
+        const dateB = new Date(b.created_date);
         return dateB.getTime() - dateA.getTime();
       });
       setNotifications(sortedData);
@@ -60,7 +65,7 @@ function NotificationsContent() {
     if (clientId) {
       loadNotifications();
     }
-  }, [clientId]);
+  }, [clientId, selectedDays]); // Re-run when selectedDays changes
 
   const getIcon = (type) => {
     switch (type) {
@@ -199,7 +204,7 @@ function NotificationsContent() {
                   }
                   secondary={
                     <Typography variant="body2" color="text.secondary">
-                      {notif.description} - {formatDateToDDMMYYYYHHMM(notif.created_at)}
+                      {notif.description} - {formatDateToDDMMYYYYHHMM(notif.created_date)}
                     </Typography>
                   }
                 />

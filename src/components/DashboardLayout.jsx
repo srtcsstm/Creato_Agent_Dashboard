@@ -49,6 +49,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchNocoDBData } from '../api/nocodb';
+// import { useDashboardFilter } from '../contexts/DashboardFilterContext'; // Artık burada kullanılmıyor
 
 const appBarHeight = 70;
 const sidebarWidthOpen = 240;
@@ -63,6 +64,7 @@ function DashboardLayout() {
   const { logout, clientId } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const { currentLanguage, setLanguage, t } = useLanguage();
+  // const { selectedDays, setSelectedDays } = useDashboardFilter(); // Header'dan kaldırıldı
   const theme = useTheme();
 
   const handleMenu = (event) => {
@@ -87,6 +89,10 @@ function DashboardLayout() {
   const handleLanguageChange = (event) => {
     setLanguage(event.target.value);
   };
+
+  // const handleDaysChange = (event) => { // Header'dan kaldırıldığı için bu fonksiyon da kaldırıldı
+  //   setSelectedDays(event.target.value);
+  // };
 
   useEffect(() => {
     const getUnreadCount = async () => {
@@ -334,6 +340,30 @@ function DashboardLayout() {
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
+
+              {/* Date Range Selector - Moved to DashboardPage.jsx */}
+              {/* {location.pathname === '/dashboard' && (
+                <Select
+                  value={selectedDays}
+                  onChange={handleDaysChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    color: theme.palette.text.primary,
+                    '.MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.divider },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main },
+                    '.MuiSvgIcon-root': { color: theme.palette.text.secondary },
+                    backgroundColor: theme.palette.background.paper,
+                  }}
+                >
+                  <MenuItem value={1}>{t('dateRanges.lastDay')}</MenuItem>
+                  <MenuItem value={7}>{t('dateRanges.last7Days')}</MenuItem>
+                  <MenuItem value={10}>{t('dateRanges.last10Days')}</MenuItem>
+                  <MenuItem value={30}>{t('dateRanges.last30Days')}</MenuItem>
+                  <MenuItem value={60}>{t('dateRanges.last60Days')}</MenuItem>
+                  <MenuItem value={90}>{t('dateRanges.last90Days')}</MenuItem>
+                </Select>
+              )} */}
 
               <Select
                 value={currentLanguage}

@@ -6,11 +6,14 @@ import {
   Tabs,
   Tab,
   useTheme,
+  Select, // Select bileşenini import et
+  MenuItem, // MenuItem bileşenini import et
 } from '@mui/material';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDashboardFilter } from '../contexts/DashboardFilterContext'; // useDashboardFilter hook'unu import et
 
 // Import the new content components
 import OverviewContent from '../components/dashboard/OverviewContent';
@@ -48,14 +51,13 @@ function a11yProps(index) {
 function DashboardPage() {
   const { t } = useLanguage();
   const location = useLocation();
-  const navigate = useNavigate(); // Initialize navigate hook
-  const [value, setValue] = useState(0); // State for active tab
+  const navigate = useNavigate();
+  const [value, setValue] = useState(0);
+  const { selectedDays, setSelectedDays } = useDashboardFilter(); // Context'ten selectedDays ve setSelectedDays al
   const theme = useTheme();
 
-  // Map tab index to tab parameter string
   const tabIndexToParam = ['overview', 'analytics', 'reports', 'notifications'];
 
-  // Determine initial tab based on URL query parameter
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const tabParam = queryParams.get('tab');
@@ -63,15 +65,23 @@ function DashboardPage() {
     if (index !== -1) {
       setValue(index);
     } else {
-      setValue(0); // Default to Overview
+      setValue(0);
     }
-  }, [location.search]); // Re-run when URL query changes
+  }, [location.search]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    // Update URL with the new tab parameter
     const newTabParam = tabIndexToParam[newValue];
-    navigate(`?tab=${newTabParam}`, { replace: true }); // Use replace to avoid cluttering history
+    navigate(`?tab=${newTabParam}`, { replace: true });
+  };
+
+  const handleDaysChange = (event) => {
+    setSelectedDays(event.target.value);
+  };
+
+  const getDateRangeLabel = () => {
+    if (selectedDays === 1) return t('dateRanges.lastDay');
+    return t('dateRanges.lastXDays', { count: selectedDays });
   };
 
   return (
@@ -82,7 +92,29 @@ function DashboardPage() {
           {t('dashboard.title')}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button
+          {/* Tarih Seçici Dropdown */}
+          <Select
+            value={selectedDays}
+            onChange={handleDaysChange}
+            variant="outlined"
+            size="small"
+            sx={{
+              color: theme.palette.text.primary,
+              '.MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.divider },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main },
+              '.MuiSvgIcon-root': { color: theme.palette.text.secondary },
+              backgroundColor: theme.palette.background.paper,
+            }}
+          >
+            <MenuItem value={1}>{t('dateRanges.lastDay')}</MenuItem>
+            <MenuItem value={7}>{t('dateRanges.last7Days')}</MenuItem>
+            <MenuItem value={10}>{t('dateRanges.last10Days')}</MenuItem>
+            <MenuItem value={30}>{t('dateRanges.last30Days')}</MenuItem>
+            <MenuItem value={60}>{t('dateRanges.last60Days')}</MenuItem>
+            <MenuItem value={90}>{t('dateRanges.last90Days')}</MenuItem>
+          </Select>
+          {/* Takvim ikonu ve metni kaldırıldı, Select bileşeni yeterli */}
+          {/* <Button
             variant="outlined"
             startIcon={<CalendarTodayIcon />}
             sx={{
@@ -94,9 +126,8 @@ function DashboardPage() {
               },
             }}
           >
-            Jan 20, 2023 - Feb 09, 2023
-          </Button>
-          {/* The Download Reports button is now only in ReportsContent */}
+            {getDateRangeLabel()}
+          </Button> */}
         </Box>
       </Box>
 
@@ -132,16 +163,16 @@ function DashboardPage() {
 
       {/* Tab Panels */}
       <TabPanel value={value} index={0}>
-        <OverviewContent />
+        <OverviewContent selectedDays={selectedDays} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <AnalyticsContent />
+        <AnalyticsContent selectedDays={selectedDays} />
       </TabPanel>
       <TabPanel value={value} index={2}>
         <ReportsContent />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <NotificationsContent />
+        <NotificationsContent selectedDays={selectedDays} />
       </TabPanel>
     </Box>
   );

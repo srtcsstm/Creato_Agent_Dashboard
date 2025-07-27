@@ -9,12 +9,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'; // Import InfoOutlinedIcon
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchNocoDBData } from '../../api/nocodb';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { parseDDMMYYYYHHMM, formatDateToYYYYMMDD } from '../../utils/dateUtils';
+import { parseDDMMYYYYHHMM, formatDateToYYYYMMDD, getStartDateForDaysAgo } from '../../utils/dateUtils';
 
-function AnalyticsContent() {
+function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
   const { clientId } = useAuth();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
@@ -29,11 +30,22 @@ function AnalyticsContent() {
     const loadAnalyticsData = async () => {
       setLoading(true);
       setError(null);
+
+      const endDate = formatDateToYYYYMMDD(new Date());
+      const startDate = getStartDateForDaysAgo(selectedDays);
+
       try {
-        const messages = await fetchNocoDBData('messages', clientId);
-        const calls = await fetchNocoDBData('calls', clientId);
-        const offers = await fetchNocoDBData('offers', clientId);
-        const leads = await fetchNocoDBData('leads', clientId);
+        // Pass selectedDays to fetchNocoDBData for conditional filtering logic
+        const messages = await fetchNocoDBData('messages', clientId, { startDate, endDate, selectedDays });
+        const calls = await fetchNocoDBData('calls', clientId, { startDate, endDate, selectedDays });
+        const offers = await fetchNocoDBData('offers', clientId, { startDate, endDate, selectedDays });
+        const leads = await fetchNocoDBData('leads', clientId, { startDate, endDate, selectedDays });
+
+        console.log("Analytics - Fetched Messages:", messages);
+        console.log("Analytics - Fetched Calls:", calls);
+        console.log("Analytics - Fetched Offers:", offers);
+        console.log("Analytics - Fetched Leads:", leads);
+
 
         // Message Channel Usage (Pie Chart)
         const channelCounts = messages.reduce((acc, msg) => {
@@ -46,10 +58,14 @@ function AnalyticsContent() {
           label: channel,
           color: theme.palette.primary.light, // Example color, can be customized
         })));
+        console.log("Analytics - Message Channel Data:", messageChannelData);
+
 
         // Total Call Duration (Bar Chart)
         const dailyCallDurations = calls.reduce((acc, call) => {
-          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(call.date));
+          // Use 'created_date' for filtering if available, fallback to 'date'
+          const dateField = call.created_date || call.date;
+          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(dateField));
           if (date) {
             acc[date] = (acc[date] || 0) + (parseFloat(call.duration_minutes) || 0);
           }
@@ -60,6 +76,8 @@ function AnalyticsContent() {
           date,
           duration: dailyCallDurations[date],
         })));
+        console.log("Analytics - Call Duration Data:", callDurationData);
+
 
         // Offer Acceptance Rate (Pie Chart)
         const acceptedOffersCount = offers.filter(offer => offer.status === 'Accepted').length;
@@ -76,6 +94,8 @@ function AnalyticsContent() {
         } else {
           setOfferConversionData([]);
         }
+        console.log("Analytics - Offer Conversion Data:", offerConversionData);
+
 
         // Leads by Interest (Bar Chart)
         const interestCounts = leads.reduce((acc, lead) => {
@@ -87,6 +107,8 @@ function AnalyticsContent() {
           interest,
           count: interestCounts[interest],
         })));
+        console.log("Analytics - Leads by Interest Data:", leadsByInterestData);
+
 
       } catch (err) {
         setError(err.message);
@@ -98,7 +120,7 @@ function AnalyticsContent() {
     if (clientId) {
       loadAnalyticsData();
     }
-  }, [clientId, theme.palette.primary.light, theme.palette.success.main, theme.palette.error.main, theme.palette.warning.main, t]);
+  }, [clientId, selectedDays, theme.palette.primary.light, theme.palette.success.main, theme.palette.error.main, theme.palette.warning.main, t]);
 
   if (loading) {
     return (
@@ -112,6 +134,13 @@ function AnalyticsContent() {
   if (error) {
     return <Alert severity="error">{t('common.error')}: {error}</Alert>;
   }
+
+  const NoDataDisplay = ({ message }) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <InfoOutlinedIcon sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
+      <Typography variant="body1" color="text.secondary">{message}</Typography>
+    </Box>
+  );
 
   return (
     <Box>
@@ -153,7 +182,7 @@ function AnalyticsContent() {
                   }}
                 />
               ) : (
-                <Typography variant="body1" color="text.secondary">{t('dashboard.noChannelData')}</Typography>
+                <NoDataDisplay message={t('dashboard.noChannelData')} />
               )}
             </Box>
           </Card>
@@ -189,9 +218,7 @@ function AnalyticsContent() {
                   }}
                 />
               ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">{t('dashboard.noCallData')}</Typography>
-                </Box>
+                <NoDataDisplay message={t('dashboard.noCallData')} />
               )}
             </Box>
           </Card>
@@ -234,7 +261,7 @@ function AnalyticsContent() {
                   }}
                 />
               ) : (
-                <Typography variant="body1" color="text.secondary">{t('dashboard.noOfferConversionData')}</Typography>
+                <NoDataDisplay message={t('dashboard.noOfferConversionData')} />
               )}
             </Box>
           </Card>
@@ -270,9 +297,7 @@ function AnalyticsContent() {
                   }}
                 />
               ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">{t('dashboard.noLeadsByInterestData')}</Typography>
-                </Box>
+                <NoDataDisplay message={t('dashboard.noLeadsByInterestData')} />
               )}
             </Box>
           </Card>

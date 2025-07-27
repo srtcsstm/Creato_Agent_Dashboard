@@ -1,17 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { verifyUserCredentials, verifyAdminCredentials } from '../api/nocodb'; // Import the new verification function
+import { verifyUserCredentials, verifyAdminCredentials } from '../api/nocodb';
 
-const AuthContext = createContext(null);
+// Provide a default value that matches the expected shape, even if empty/null functions
+const AuthContext = createContext({
+  isAuthenticated: false,
+  isAdminAuthenticated: false,
+  clientId: null,
+  apiKey: null,
+  loginCustomer: async () => false, // Dummy function
+  loginAdmin: async () => false,   // Dummy function
+  logout: () => {},                // Dummy function
+});
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // For customer dashboard
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false); // For admin panel
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [clientId, setClientId] = useState(null);
-  const [apiKey, setApiKey] = useState(null); // This will now store the password_hash for customer
+  const [apiKey, setApiKey] = useState(null);
 
   useEffect(() => {
     const storedClientId = localStorage.getItem('clientId');
-    const storedApiKey = localStorage.getItem('apiKey'); // This is actually password_hash
+    const storedApiKey = localStorage.getItem('apiKey');
     const storedIsAdmin = localStorage.getItem('isAdminLoggedIn');
 
     if (storedClientId && storedApiKey) {
@@ -28,16 +37,16 @@ export const AuthProvider = ({ children }) => {
     const user = await verifyUserCredentials(id, password);
     if (user) {
       localStorage.setItem('clientId', id);
-      localStorage.setItem('apiKey', password); // Storing password_hash
+      localStorage.setItem('apiKey', password);
       localStorage.removeItem('isAdminLoggedIn');
       setClientId(id);
       setApiKey(password);
       setIsAuthenticated(true);
       setIsAdminAuthenticated(false);
-      return true; // Login successful
+      return true;
     } else {
       setIsAuthenticated(false);
-      return false; // Login failed
+      return false;
     }
   };
 
@@ -51,10 +60,10 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setClientId(null);
       setApiKey(null);
-      return true; // Admin login successful
+      return true;
     } else {
       setIsAdminAuthenticated(false);
-      return false; // Admin login failed
+      return false;
     }
   };
 

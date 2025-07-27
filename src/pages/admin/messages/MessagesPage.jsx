@@ -41,6 +41,7 @@ function MessagesPage() {
     channel: '',
     user_message: '',
     ai_response: '',
+    created_date: '', // Add created_date
   });
   const [openConfirm, setOpenConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
@@ -78,6 +79,7 @@ function MessagesPage() {
             channel: message.channel || '',
             user_message: message.user_message || '',
             ai_response: message.ai_response || '',
+            created_date: formatDateToYYYYMMDDTHHMM(parseDDMMYYYYHHMM(message.created_date || message.timestamp)), // Use created_date or fallback
           }
         : {
             id: '',
@@ -87,6 +89,7 @@ function MessagesPage() {
             channel: '',
             user_message: '',
             ai_response: '',
+            created_date: formatDateToYYYYMMDDTHHMM(new Date()),
           }
     );
     setOpenForm(true);
@@ -103,6 +106,7 @@ function MessagesPage() {
       channel: '',
       user_message: '',
       ai_response: '',
+      created_date: '',
     });
   };
 
@@ -123,6 +127,7 @@ function MessagesPage() {
       const payload = {
         ...formData,
         timestamp: formatDateToISOString(new Date(formData.timestamp)), // Convert to ISO for NocoDB
+        created_date: formatDateToISOString(new Date(formData.created_date)), // Convert to ISO for NocoDB
       };
 
       if (editingMessage) {
@@ -241,8 +246,7 @@ function MessagesPage() {
                   <TableCell>{message.id}</TableCell>
                   <TableCell>{message.client_id}</TableCell>
                   <TableCell>{message.session_id}</TableCell>
-                  <TableCell>{formatDateToDDMMYYYYHHMM(message.timestamp)}</TableCell>
-                  <TableCell>{message.channel}</TableCell>
+                  <TableCell>{formatDateToDDMMYYYYHHMM(message.created_date || message.timestamp)}</TableCell>
                   <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {message.user_message}
                   </TableCell>
@@ -336,6 +340,17 @@ function MessagesPage() {
             variant="outlined"
             value={formData.ai_response}
             onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="created_date"
+            label={t('adminUsersPage.createdAt')}
+            type="datetime-local"
+            fullWidth
+            variant="outlined"
+            value={formData.created_date}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>

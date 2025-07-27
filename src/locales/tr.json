@@ -360,5 +360,14 @@
   "teamManagement": "Takım Yönetimi",
   "teamSettings": "Takım Ayarları",
   "roles": "Roller",
-  "integrations": "Entegrasyonlar"
+  "integrations": "Entegrasyonlar",
+  "dateRanges": {
+    "lastDay": "Son 1 Gün",
+    "last7Days": "Son 7 Gün",
+    "last10Days": "Son 10 Gün",
+    "last30Days": "Son 30 Gün",
+    "last60Days": "Son 60 Gün",
+    "last90Days": "Son 90 Gün",
+    "lastXDays": "Son {count} Gün"
+  }
 }

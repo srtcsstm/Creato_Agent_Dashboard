@@ -19,10 +19,25 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UsersPage from './pages/admin/users/UsersPage';
 import OffersPage from './pages/admin/offers/OffersPage';
 import AdminInvoicesPage from './pages/admin/invoices/InvoicesPage';
+import AdminMessagesPage from './pages/admin/messages/MessagesPage';
+import AdminCallsPage from './pages/admin/calls/CallsPage';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { DashboardFilterProvider } from './contexts/DashboardFilterContext';
 
-function AppRoutes() {
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        {/* useAuth hook'unu ve yönlendirme mantığını doğrudan AuthProvider'ın içine alıyoruz */}
+        <AuthRoutes />
+      </AuthProvider>
+    </Router>
+  );
+}
+
+// AuthContext'i kullanan yeni bir bileşen oluşturuyoruz
+function AuthRoutes() {
   const { isAuthenticated, isAdminAuthenticated } = useAuth();
 
   return (
@@ -32,7 +47,13 @@ function AppRoutes() {
       {/* Customer Dashboard Routes */}
       <Route
         path="/"
-        element={isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" replace />}
+        element={isAuthenticated ? (
+          <DashboardFilterProvider>
+            <DashboardLayout />
+          </DashboardFilterProvider>
+        ) : (
+          <Navigate to="/login" replace />
+        )}
       >
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
@@ -53,21 +74,13 @@ function AppRoutes() {
         <Route path="users" element={<UsersPage />} />
         <Route path="offers" element={<OffersPage />} />
         <Route path="invoices" element={<AdminInvoicesPage />} />
+        <Route path="messages" element={<AdminMessagesPage />} />
+        <Route path="calls" element={<AdminCallsPage />} />
       </Route>
 
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </Router>
   );
 }
 

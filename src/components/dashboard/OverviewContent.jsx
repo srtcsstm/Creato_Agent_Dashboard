@@ -14,10 +14,11 @@ import {
   ButtonBase, // Import ButtonBase for clickable cards
 } from '@mui/material';
 import { BarChart } from '@mui/x-charts';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'; // Import InfoOutlinedIcon
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchNocoDBData } from '../../api/nocodb';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { parseDDMMYYYYHHMM, formatDateToDDMMYYYYHHMM, formatDateToYYYYMMDD } from '../../utils/dateUtils';
+import { parseDDMMYYYYHHMM, formatDateToDDMMYYYYHHMM, formatDateToYYYYMMDD, getStartDateForDaysAgo } from '../../utils/dateUtils';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 // Icons
@@ -29,7 +30,7 @@ import DescriptionIcon from '@mui/icons-material/Description'; // Total Offers
 import ChatIcon from '@mui/icons-material/Chat';
 import CallIcon from '@mui/icons-material/Call';
 
-function OverviewContent() {
+function OverviewContent({ selectedDays }) { // Receive selectedDays prop
   const { clientId } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate(); // Initialize navigate hook
@@ -52,12 +53,24 @@ function OverviewContent() {
     const loadDashboardData = async () => {
       setLoading(true);
       setError(null);
+
+      const endDate = formatDateToYYYYMMDD(new Date());
+      const startDate = getStartDateForDaysAgo(selectedDays);
+
       try {
-        const messages = await fetchNocoDBData('messages', clientId);
-        const calls = await fetchNocoDBData('calls', clientId);
-        const leads = await fetchNocoDBData('leads', clientId);
-        const offers = await fetchNocoDBData('offers', clientId);
-        const invoices = await fetchNocoDBData('invoices', clientId);
+        // Pass selectedDays to fetchNocoDBData for conditional filtering logic
+        const messages = await fetchNocoDBData('messages', clientId, { startDate, endDate, selectedDays });
+        const calls = await fetchNocoDBData('calls', clientId, { startDate, endDate, selectedDays });
+        const leads = await fetchNocoDBData('leads', clientId, { startDate, endDate, selectedDays });
+        const offers = await fetchNocoDBData('offers', clientId, { startDate, endDate, selectedDays });
+        const invoices = await fetchNocoDBData('invoices', clientId, { startDate, endDate, selectedDays });
+
+        console.log("Overview - Fetched Messages:", messages);
+        console.log("Overview - Fetched Calls:", calls);
+        console.log("Overview - Fetched Leads:", leads);
+        console.log("Overview - Fetched Offers:", offers);
+        console.log("Overview - Fetched Invoices:", invoices);
+
 
         // KPI Calculations
         const totalMessages = messages.length;
@@ -75,10 +88,14 @@ function OverviewContent() {
           outstandingPaymentAmount: outstandingPaymentAmount.toFixed(2),
           totalOffers,
         });
+        console.log("Overview - Metrics:", metrics);
+
 
         // Daily Message Count Chart Data
         const dailyMessageCounts = messages.reduce((acc, msg) => {
-          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(msg.timestamp));
+          // Use 'created_date' for filtering if available, fallback to 'timestamp'
+          const dateField = msg.created_date || msg.timestamp;
+          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(dateField));
           if (date) {
             acc[date] = (acc[date] || 0) + 1;
           }
@@ -89,10 +106,14 @@ function OverviewContent() {
           date,
           count: dailyMessageCounts[date],
         })));
+        console.log("Overview - Message Sessions Data:", messageSessionsData);
+
 
         // Daily Call Count Chart Data
         const dailyCallCounts = calls.reduce((acc, call) => {
-          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(call.date));
+          // Use 'created_date' for filtering if available, fallback to 'date'
+          const dateField = call.created_date || call.date;
+          const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(dateField));
           if (date) {
             acc[date] = (acc[date] || 0) + 1;
           }
@@ -103,34 +124,63 @@ function OverviewContent() {
           date,
           count: dailyCallCounts[date],
         })));
+        console.log("Overview - Call Sessions Data:", callSessionsData);
+
 
         // Recent Interactions List (Messages & Calls)
-        const combinedInteractions = [
-          ...messages.map(msg => ({
-            type: 'message',
-            timestamp: parseDDMMYYYYHHMM(msg.timestamp),
-            channel: msg.channel,
-            summary: msg.user_message,
-            id: msg.id,
-          })),
-          ...calls.map(call => ({
+        // Group messages by session_id and get the latest message for each session
+        const groupedMessages = messages.reduce((acc, msg) => {
+          const sessionId = msg.session_id;
+          const msgTimestamp = parseDDMMYYYYHHMM(msg.created_date || msg.timestamp);
+          if (!acc[sessionId] || (msgTimestamp && msgTimestamp > parseDDMMYYYYHHMM(acc[sessionId].timestamp))) {
+            acc[sessionId] = {
+              type: 'message',
+              timestamp: msgTimestamp,
+              channel: msg.channel,
+              summary: msg.user_message,
+              id: msg.id,
+              sessionId: sessionId, // Add session ID for reference
+            };
+          }
+          return acc;
+        }, {});
+
+        // Group calls by session_id (if calls have session_id, otherwise treat as individual)
+        // For simplicity, treating calls as individual interactions for now if no session_id is present.
+        // If calls can be part of a session, similar grouping logic would apply.
+        const groupedCalls = calls.reduce((acc, call) => {
+          const callTimestamp = parseDDMMYYYYHHMM(call.created_date || call.date);
+          // Assuming calls might not have a session_id, or each call is a distinct interaction.
+          // If calls can be part of a session, you'd need a session_id for calls too.
+          acc[call.id] = { // Use call.id as key for individual calls
             type: 'call',
-            timestamp: parseDDMMYYYYHHMM(call.date),
+            timestamp: callTimestamp,
             channel: 'Call',
             summary: call.summary,
             id: call.id,
-          })),
+          };
+          return acc;
+        }, {});
+
+
+        const combinedInteractions = [
+          ...Object.values(groupedMessages),
+          ...Object.values(groupedCalls),
         ].filter(item => item.timestamp !== null);
 
         combinedInteractions.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setRecentInteractions(combinedInteractions.slice(0, 5));
+        console.log("Overview - Recent Interactions:", recentInteractions);
+
 
         // Recent Proposals List
         const sortedProposals = offers
-          .map(offer => ({ ...offer, sent_at_parsed: parseDDMMYYYYHHMM(offer.sent_at) }))
+          .map(offer => ({ ...offer, sent_at_parsed: parseDDMMYYYYHHMM(offer.created_date || offer.sent_at) })) // Use created_date
           .filter(offer => offer.sent_at_parsed !== null)
           .sort((a, b) => b.sent_at_parsed.getTime() - a.sent_at_parsed.getTime());
         setRecentProposals(sortedProposals.slice(0, 5));
+        console.log("Overview - Recent Proposals:", recentProposals);
+
 
       } catch (err) {
         setError(err.message);
@@ -142,7 +192,7 @@ function OverviewContent() {
     if (clientId) {
       loadDashboardData();
     }
-  }, [clientId, theme.palette.success.main, theme.palette.error.main, theme.palette.warning.main]);
+  }, [clientId, selectedDays, theme.palette.success.main, theme.palette.error.main, theme.palette.warning.main]);
 
   const handleCardClick = (path) => {
     navigate(path);
@@ -160,6 +210,13 @@ function OverviewContent() {
   if (error) {
     return <Alert severity="error">{t('common.error')}: {error}</Alert>;
   }
+
+  const NoDataDisplay = ({ message }) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <InfoOutlinedIcon sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
+      <Typography variant="body1" color="text.secondary">{message}</Typography>
+    </Box>
+  );
 
   return (
     <Box>
@@ -343,9 +400,7 @@ function OverviewContent() {
                   }}
                 />
               ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">{t('dashboard.noMessageData')}</Typography>
-                </Box>
+                <NoDataDisplay message={t('dashboard.noMessageData')} />
               )}
             </Box>
           </Card>
@@ -381,9 +436,7 @@ function OverviewContent() {
                   }}
                 />
               ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Typography variant="body1" color="text.secondary">{t('dashboard.noCallData')}</Typography>
-                </Box>
+                <NoDataDisplay message={t('dashboard.noCallData')} />
               )}
             </Box>
           </Card>
@@ -397,9 +450,7 @@ function OverviewContent() {
             </Typography>
             <List>
               {recentInteractions.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                  {t('dashboard.noRecentInteractions')}
-                </Typography>
+                <NoDataDisplay message={t('dashboard.noRecentInteractions')} />
               ) : (
                 recentInteractions.map((interaction) => (
                   <ListItem key={interaction.id} disablePadding>
@@ -433,9 +484,7 @@ function OverviewContent() {
             </Typography>
             <List>
               {recentProposals.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                  {t('dashboard.noRecentProposals')}
-                </Typography>
+                <NoDataDisplay message={t('dashboard.noRecentProposals')} />
               ) : (
                 recentProposals.map((proposal) => (
                   <ListItem key={proposal.id} disablePadding>

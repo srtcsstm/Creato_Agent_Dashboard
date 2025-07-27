@@ -43,6 +43,7 @@ function CallsPage() {
     summary: '',
     details: '', // New field
     audio_url: '',
+    created_date: '', // Add created_date
   });
   const [openConfirm, setOpenConfirm] = useState(false);
   const [callToDelete, setCallToDelete] = useState(null);
@@ -83,6 +84,7 @@ function CallsPage() {
             summary: call.summary || '',
             details: call.details || '',
             audio_url: call.audio_url || '',
+            created_date: formatDateToYYYYMMDD(parseDDMMYYYYHHMM(call.created_date || call.date)), // Use created_date or fallback
           }
         : {
             id: '',
@@ -93,6 +95,7 @@ function CallsPage() {
             summary: '',
             details: '',
             audio_url: '',
+            created_date: formatDateToYYYYMMDD(new Date()),
           }
     );
     setOpenForm(true);
@@ -110,6 +113,7 @@ function CallsPage() {
       summary: '',
       details: '',
       audio_url: '',
+      created_date: '',
     });
   };
 
@@ -132,6 +136,7 @@ function CallsPage() {
         duration: parseInt(formData.duration_minutes, 10) * 60, // Convert minutes to seconds for original duration field
         duration_minutes: parseInt(formData.duration_minutes, 10),
         date: formatDateToISOString(new Date(formData.date)), // Convert to ISO for NocoDB
+        created_date: formatDateToISOString(new Date(formData.created_date)), // Convert to ISO for NocoDB
       };
 
       if (editingCall) {
@@ -265,7 +270,7 @@ function CallsPage() {
                 <TableRow key={call.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                   <TableCell>{call.id}</TableCell>
                   <TableCell>{call.client_id}</TableCell>
-                  <TableCell>{formatDateToDDMMYYYYHHMM(call.date)}</TableCell>
+                  <TableCell>{formatDateToDDMMYYYYHHMM(call.created_date || call.date)}</TableCell>
                   <TableCell>{call.duration_minutes}</TableCell>
                   <TableCell sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {call.summary}
@@ -370,6 +375,17 @@ function CallsPage() {
             variant="outlined"
             value={formData.audio_url}
             onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="created_date"
+            label={t('adminUsersPage.createdAt')}
+            type="date"
+            fullWidth
+            variant="outlined"
+            value={formData.created_date}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>

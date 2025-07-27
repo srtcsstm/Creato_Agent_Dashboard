@@ -13,6 +13,7 @@ function ProfileSettingsPage() {
     email: '',
     company_name: '', // Matches NocoDB column name
     client_id: '', // Matches NocoDB column name
+    created_date: '', // Add created_date
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +36,7 @@ function ProfileSettingsPage() {
             email: user.email || '',
             company_name: user.company_name || '',
             client_id: user.client_id || '',
+            created_date: user.created_date || '', // Set created_date
           });
         } else {
           setError(t('profileSettingsPage.noProfileFound'));
@@ -67,7 +69,7 @@ function ProfileSettingsPage() {
       const payload = {
         name: profile.name,
         company_name: profile.company_name,
-        // email and client_id are read-only, so no need to send them in update payload
+        // email, client_id, and created_date are read-only, so no need to send them in update payload
       };
 
       await updateNocoDBData('users', profile.id, payload);
@@ -150,6 +152,15 @@ function ProfileSettingsPage() {
           variant="outlined"
           margin="normal"
           InputProps={{ readOnly: true }} // Make client_id read-only
+        />
+        <TextField
+          fullWidth
+          label={t('adminUsersPage.createdAt')}
+          name="created_date"
+          value={formatDateToDDMMYYYYHHMM(profile.created_date)}
+          variant="outlined"
+          margin="normal"
+          InputProps={{ readOnly: true }} // Make created_date read-only
         />
         <Button variant="contained" sx={{ mt: 3 }} onClick={handleSave} disabled={loading}>
           {t('profileSettingsPage.saveChanges')}

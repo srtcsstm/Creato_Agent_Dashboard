@@ -5,7 +5,8 @@ import './index.css';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { ThemeProvider, useThemeMode } from './contexts/ThemeContext';
-import { LanguageProvider } from './contexts/LanguageContext'; // Corrected import path
+import { LanguageProvider } from './contexts/LanguageContext';
+// import { DashboardFilterProvider } from './contexts/DashboardFilterContext'; // Removed from here
 
 function Root() {
   const { theme } = useThemeMode();
@@ -19,8 +20,9 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <LanguageProvider> {/* Wrap with LanguageProvider */}
+    <LanguageProvider>
       <ThemeProvider>
+        {/* DashboardFilterProvider moved to App.jsx */}
         <Root />
       </ThemeProvider>
     </LanguageProvider>

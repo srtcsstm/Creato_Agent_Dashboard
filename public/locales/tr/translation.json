@@ -107,7 +107,7 @@
     "details": "Detaylar"
   },
   "leadsPage": {
-    "title": "Potansiyel Müşteriler",
+    "title": "Yakalanan Potansiyel Müşteriler",
     "exportToCsv": "CSV'ye Aktar",
     "name": "Ad",
     "email": "E-posta",
@@ -146,18 +146,6 @@
     "noInvoiceUrl": "Bu kayıt için fatura URL'si mevcut değil.",
     "loadingFinancialData": "Finansal veriler yükleniyor."
   },
-  "paymentsPage": {
-    "title": "Ödemeler",
-    "paymentId": "Ödeme ID",
-    "invoiceId": "Fatura ID",
-    "clientId": "Müşteri ID",
-    "amount": "Tutar",
-    "status": "Durum",
-    "paymentDate": "Ödeme Tarihi",
-    "method": "Yöntem",
-    "noPaymentsFound": "Ödeme bulunamadı.",
-    "loadingPayments": "Ödemeler yükleniyor."
-  },
   "settingsPage": {
     "title": "Agent Ayarları",
     "apiToken": "API Anahtarınız",
@@ -183,7 +171,7 @@
     "manageInvoices": "Faturaları Yönet",
     "quickLinks": "Hızlı Bağlantılar",
     "goToUsersManagement": "Kullanıcı Yönetimine Git",
-    "goToOffersManagement": "Go to Offers Management",
+    "goToOffersManagement": "Teklif Yönetimine Git",
     "goToInvoicesManagement": "Fatura Yönetimine Git",
     "loadingAdminDashboard": "Yönetici paneli yükleniyor.",
     "errorLoadingAdminDashboard": "Yönetici paneli yüklenirken hata oluştu:"
@@ -369,24 +357,17 @@
   "myAccount": "Hesabım",
   "profile": "Profil",
   "inbox": "Gelen Kutusu",
-  "clientManagement": "Müşteri Yönetimi",
-  "profileSettingsPage": {
-    "title": "Profil Ayarları",
-    "personalInformation": "Kişisel Bilgiler",
-    "name": "Ad",
-    "email": "E-posta",
-    "company": "Şirket",
-    "phone": "Telefon",
-    "saveChanges": "Değişiklikleri Kaydet",
-    "saveSuccess": "Profil ayarları başarıyla kaydedildi!",
-    "noProfileFound": "Profil bilgileri bulunamadı.",
-    "loadingProfile": "Profil yükleniyor...",
-    "errorUpdatingProfileNoId": "Hata: Profil güncellenemedi. Kullanıcı ID eksik.",
-    "errorSavingChanges": "Değişiklikler kaydedilirken hata oluştu:"
-  },
-  "unsupportedPage": {
-    "title": "Desteklenmeyen Özellik",
-    "message": "Üzgünüz, bu özellik şu anda geliştirme aşamasındadır ve mevcut değildir. Lütfen daha sonra tekrar deneyin.",
-    "goBackToDashboard": "Kontrol Paneline Geri Dön"
+  "teamManagement": "Takım Yönetimi",
+  "teamSettings": "Takım Ayarları",
+  "roles": "Roller",
+  "integrations": "Entegrasyonlar",
+  "dateRanges": {
+    "lastDay": "Son 1 Gün",
+    "last7Days": "Son 7 Gün",
+    "last10Days": "Son 10 Gün",
+    "last30Days": "Son 30 Gün",
+    "last60Days": "Son 60 Gün",
+    "last90Days": "Son 90 Gün",
+    "lastXDays": "Son {count} Gün"
   }
 }

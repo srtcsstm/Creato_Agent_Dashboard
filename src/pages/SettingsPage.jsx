@@ -20,6 +20,7 @@ function SettingsPage() {
     tone: '',
     fallback_behavior: '',
     api_token: '',
+    created_date: '', // Add created_date
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,6 +41,7 @@ function SettingsPage() {
             tone: data[0].tone || '',
             fallback_behavior: data[0].fallback_behavior || '',
             api_token: data[0].api_token || '********************', // Display masked token
+            created_date: data[0].created_date || '', // Set created_date
           });
         } else {
           // Default settings if no record found for client_id
@@ -47,6 +49,7 @@ function SettingsPage() {
             tone: 'Neutral',
             fallback_behavior: 'Human Handover',
             api_token: '********************',
+            created_date: '',
           });
         }
       } catch (err) {

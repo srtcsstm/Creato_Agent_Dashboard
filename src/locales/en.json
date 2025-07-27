@@ -23,7 +23,7 @@
     "totalMessages": "Total Messages",
     "totalCalls": "Total Calls",
     "totalCallDuration": "Total Call Duration (min)",
-    "leadsCaptured": "Leads Captured",
+    "leadsCaptured": "Leads",
     "increase": "Increased",
     "decrease": "Decreased",
     "faster": "Faster",
@@ -107,7 +107,7 @@
     "details": "Details"
   },
   "leadsPage": {
-    "title": "Captured Leads",
+    "title": "Leads",
     "exportToCsv": "Export to CSV",
     "name": "Name",
     "email": "Email",
@@ -145,6 +145,18 @@
     "download": "Download",
     "noInvoiceUrl": "No invoice URL available for this record.",
     "loadingFinancialData": "Loading financial data."
+  },
+  "paymentsPage": {
+    "title": "Payments",
+    "paymentId": "Payment ID",
+    "invoiceId": "Invoice ID",
+    "clientId": "Client ID",
+    "amount": "Amount",
+    "status": "Status",
+    "paymentDate": "Payment Date",
+    "method": "Method",
+    "noPaymentsFound": "No payments found.",
+    "loadingPayments": "Loading payments."
   },
   "settingsPage": {
     "title": "Agent Settings",
@@ -357,8 +369,33 @@
   "myAccount": "My Account",
   "profile": "Profile",
   "inbox": "Inbox",
-  "teamManagement": "Team Management",
-  "teamSettings": "Team Settings",
-  "roles": "Roles",
-  "integrations": "Integrations"
+  "clientManagement": "Client Management",
+  "profileSettingsPage": {
+    "title": "Profile Settings",
+    "personalInformation": "Personal Information",
+    "name": "Name",
+    "email": "Email",
+    "company": "Company",
+    "phone": "Phone",
+    "saveChanges": "Save Changes",
+    "saveSuccess": "Profile settings saved successfully!",
+    "noProfileFound": "No profile information found for this client ID.",
+    "loadingProfile": "Loading profile...",
+    "errorUpdatingProfileNoId": "Error: Profile could not be updated. User ID is missing.",
+    "errorSavingChanges": "Error saving changes:"
+  },
+  "unsupportedPage": {
+    "title": "Unsupported Feature",
+    "message": "Sorry, this feature is currently under development and not available. Please try again later.",
+    "goBackToDashboard": "Go Back to Dashboard"
+  },
+  "dateRanges": {
+    "lastDay": "Last 1 Day",
+    "last7Days": "Last 7 Days",
+    "last10Days": "Last 10 Days",
+    "last30Days": "Last 30 Days",
+    "last60Days": "Last 60 Days",
+    "last90Days": "Last 90 Days",
+    "lastXDays": "Last {count} Days"
+  }
 }

@@ -25,11 +25,41 @@ const getTableId = (tableName) => {
   return id;
 };
 
-export const fetchNocoDBData = async (tableName, clientId = null, params = {}) => {
+export const fetchNocoDBData = async (tableName, clientId = null, options = {}) => {
   const tableId = getTableId(tableName);
-  const queryParams = new URLSearchParams(params);
+  const queryParams = new URLSearchParams();
+  let conditions = []; // Koşulları tutacak dizi
+
+  // Client ID koşulu
   if (clientId) {
-    queryParams.append('where', `(client_id,eq,${clientId})`);
+    conditions.push(`(client_id,eq,${clientId})`);
+  }
+
+  // Tarih aralığı koşulu
+  // Tüm sorgularda 'created_date' sütununu kullanmak üzere güncellendi.
+  const dateFilterField = 'created_date'; 
+
+  if (options.startDate && options.endDate) {
+    if (options.selectedDays === 1) {
+      // Tek gün için: (created_date,eq,exactDate,YYYY-MM-DD)
+      conditions.push(`(${dateFilterField},eq,exactDate,${options.startDate})`);
+    } else {
+      // Tarih aralığı için: (created_date,ge,exactDate,START) ve (created_date,le,exactDate,END)
+      conditions.push(`(${dateFilterField},ge,exactDate,${options.startDate})`);
+      conditions.push(`(${dateFilterField},le,exactDate,${options.endDate})`);
+    }
+  }
+
+  // Tüm koşulları '~and' ile birleştirerek tek bir 'where' parametresi oluştur
+  if (conditions.length > 0) {
+    queryParams.append('where', conditions.join('~and'));
+  }
+
+  // Diğer parametreleri ekle (örneğin, sıralama, limit)
+  for (const key in options) {
+    if (key !== 'startDate' && key !== 'endDate' && key !== 'where' && key !== 'selectedDays') {
+      queryParams.append(key, options[key]);
+    }
   }
 
   const url = `${BASE_URL}/${tableId}/records?${queryParams.toString()}`;

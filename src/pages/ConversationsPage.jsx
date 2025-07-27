@@ -61,6 +61,8 @@ function ConversationsPage() {
       setLoading(true);
       setError(null);
       try {
+        // Fetch all messages for the client, then filter in-memory
+        // NocoDB API's `where` clause for `created_date` is handled in fetchNocoDBData
         const data = await fetchNocoDBData('messages', clientId);
         setAllMessages(data);
       } catch (err) {
@@ -78,7 +80,9 @@ function ConversationsPage() {
   // Group and filter conversations
   const groupedConversations = useMemo(() => {
     const filtered = allMessages.filter((msg) => {
-      const msgDate = parseDDMMYYYYHHMM(msg.timestamp);
+      // Use 'created_date' for filtering if available, fallback to 'timestamp'
+      const dateField = msg.created_date || msg.timestamp;
+      const msgDate = parseDDMMYYYYHHMM(dateField);
       const matchesDate = filterDate
         ? msgDate && formatDateToYYYYMMDD(msgDate) === filterDate
         : true;
@@ -98,7 +102,7 @@ function ConversationsPage() {
         };
       }
       groups[msg.session_id].messages.push(msg);
-      const currentMsgTimestamp = parseDDMMYYYYHHMM(msg.timestamp);
+      const currentMsgTimestamp = parseDDMMYYYYHHMM(msg.created_date || msg.timestamp);
       if (currentMsgTimestamp && (!groups[msg.session_id].latestTimestamp || currentMsgTimestamp > groups[msg.session_id].latestTimestamp)) {
         groups[msg.session_id].latestTimestamp = currentMsgTimestamp;
       }
@@ -115,8 +119,8 @@ function ConversationsPage() {
   const handleViewDetails = (session) => {
     // Sort messages within the session by timestamp for display
     const sortedMessages = [...session.messages].sort((a, b) => {
-      const dateA = parseDDMMYYYYHHMM(a.timestamp);
-      const dateB = parseDDMMYYYYHHMM(b.timestamp);
+      const dateA = parseDDMMYYYYHHMM(a.created_date || a.timestamp);
+      const dateB = parseDDMMYYYYHHMM(b.created_date || b.timestamp);
       if (!dateA) return 1;
       if (!dateB) return -1;
       return dateA.getTime() - dateB.getTime();
@@ -242,7 +246,7 @@ function ConversationsPage() {
                         variant="body2"
                         color="text.secondary"
                       >
-                        {formatDateToDDMMYYYYHHMM(msg.timestamp)} - {msg.channel}
+                        {formatDateToDDMMYYYYHHMM(msg.created_date || msg.timestamp)} - {msg.channel}
                       </Typography>
                     }
                     secondary={

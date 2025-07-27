@@ -33,7 +33,7 @@ function UsersPage() {
   const [error, setError] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = {
     id: '',
     name: '',
     email: '',
@@ -41,8 +41,8 @@ function UsersPage() {
     company_name: '',
     plan: '',
     client_id: '',
-    created_at: '', // Add created_at to form data
-  });
+    created_date: '', // Add created_date to form data
+  };
   const [openConfirm, setOpenConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -80,7 +80,7 @@ function UsersPage() {
             company_name: user.company_name || '',
             plan: user.plan || '',
             client_id: user.client_id || '',
-            created_at: user.created_at || '', // Keep original created_at for display/update
+            created_date: user.created_date || '', // Keep original created_date for display/update
           }
         : {
             id: '',
@@ -90,7 +90,7 @@ function UsersPage() {
             company_name: '',
             plan: '',
             client_id: '',
-            created_at: formatDateToISOString(new Date()), // Set current date for new user
+            created_date: formatDateToISOString(new Date()), // Set current date for new user
           }
     );
     console.log("handleOpenForm: formData after setting:", { ...user, id: user?.id || user?.Id || '' });
@@ -108,7 +108,7 @@ function UsersPage() {
       company_name: '',
       plan: '',
       client_id: '',
-      created_at: '',
+      created_date: '',
     });
   };
 
@@ -130,8 +130,8 @@ function UsersPage() {
       if (payload.password_hash === '') {
         delete payload.password_hash; // Don't send empty password hash if not changed
       }
-      // Ensure created_at is in a format NocoDB expects, e.g., ISO string
-      payload.created_at = formatDateToISOString(new Date(payload.created_at));
+      // Ensure created_date is in a format NocoDB expects, e.g., ISO string
+      payload.created_date = formatDateToISOString(new Date(payload.created_date));
 
 
       if (editingUser) {
@@ -260,7 +260,7 @@ function UsersPage() {
                   <TableCell>{user.company_name}</TableCell>
                   <TableCell>{user.plan}</TableCell>
                   <TableCell>{user.client_id}</TableCell>
-                  <TableCell>{formatDateToDDMMYYYYHHMM(user.created_at)}</TableCell>
+                  <TableCell>{formatDateToDDMMYYYYHHMM(user.created_date)}</TableCell>
                   <TableCell align="center">
                     <IconButton color="primary" onClick={() => handleOpenForm(user)}>
                       <EditIcon />

@@ -1,12 +1,26 @@
 // src/utils/dateUtils.js
 
 /**
- * Parses a date string in "DD-MM-YYYY HH:mm" format into a Date object.
- * @param {string} dateStr - The date string to parse (e.g., "25-12-2023 14:30").
+ * Parses a date string into a Date object.
+ * It first tries standard Date parsing, then falls back to "DD-MM-YYYY HH:mm" format.
+ * @param {string} dateStr - The date string to parse.
  * @returns {Date|null} A Date object if parsing is successful, otherwise null.
  */
 export const parseDDMMYYYYHHMM = (dateStr) => {
   if (!dateStr) return null;
+
+  // 1. Try parsing as a standard ISO or recognized date string first
+  // This handles formats like "YYYY-MM-DD HH:mm:ss+00:00" or "YYYY-MM-DDTHH:mm:ss.sssZ"
+  try {
+    const standardDate = new Date(dateStr);
+    if (!isNaN(standardDate.getTime())) {
+      return standardDate;
+    }
+  } catch (e) {
+    // Standard parsing failed, continue to custom parsing
+  }
+
+  // 2. If standard parsing fails, try custom "DD-MM-YYYY HH:mm" format
   const parts = dateStr.match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})/);
   if (parts) {
     const [, day, month, year, hours, minutes] = parts;
@@ -17,15 +31,7 @@ export const parseDDMMYYYYHHMM = (dateStr) => {
       return date;
     }
   }
-  // Fallback for ISO strings if they somehow get here (e.g., from NocoDB directly)
-  try {
-    const isoDate = new Date(dateStr);
-    if (!isNaN(isoDate.getTime())) {
-      return isoDate;
-    }
-  } catch (e) {
-    // Ignore
-  }
+  
   console.warn(`Failed to parse date string: "${dateStr}". Returning null.`);
   return null;
 };
@@ -38,10 +44,7 @@ export const parseDDMMYYYYHHMM = (dateStr) => {
 export const formatDateToDDMMYYYYHHMM = (dateInput) => {
   let dateObj;
   if (typeof dateInput === 'string') {
-    dateObj = new Date(dateInput); // Try parsing as ISO first
-    if (isNaN(dateObj.getTime())) {
-      dateObj = parseDDMMYYYYHHMM(dateInput); // Then try custom parser
-    }
+    dateObj = parseDDMMYYYYHHMM(dateInput); // Use the robust parser
   } else if (dateInput instanceof Date) {
     dateObj = dateInput;
   } else {
@@ -67,10 +70,7 @@ export const formatDateToDDMMYYYYHHMM = (dateInput) => {
 export const formatDateToYYYYMMDD = (dateInput) => {
   let dateObj;
   if (typeof dateInput === 'string') {
-    dateObj = new Date(dateInput);
-    if (isNaN(dateObj.getTime())) {
-      dateObj = parseDDMMYYYYHHMM(dateInput);
-    }
+    dateObj = parseDDMMYYYYHHMM(dateInput); // Use the robust parser
   } else if (dateInput instanceof Date) {
     dateObj = dateInput;
   } else {
@@ -91,10 +91,7 @@ export const formatDateToYYYYMMDD = (dateInput) => {
 export const formatDateToYYYYMMDDTHHMM = (dateInput) => {
   let dateObj;
   if (typeof dateInput === 'string') {
-    dateObj = new Date(dateInput);
-    if (isNaN(dateObj.getTime())) {
-      dateObj = parseDDMMYYYYHHMM(dateInput);
-    }
+    dateObj = parseDDMMYYYYHHMM(dateInput); // Use the robust parser
   } else if (dateInput instanceof Date) {
     dateObj = dateInput;
   } else {
@@ -121,10 +118,7 @@ export const formatDateToYYYYMMDDTHHMM = (dateInput) => {
 export const formatDateToISOString = (dateInput) => {
   let dateObj;
   if (typeof dateInput === 'string') {
-    dateObj = new Date(dateInput);
-    if (isNaN(dateObj.getTime())) {
-      dateObj = parseDDMMYYYYHHMM(dateInput);
-    }
+    dateObj = parseDDMMYYYYHHMM(dateInput); // Use the robust parser
   } else if (dateInput instanceof Date) {
     dateObj = dateInput;
   } else {
@@ -135,4 +129,15 @@ export const formatDateToISOString = (dateInput) => {
     return dateObj.toISOString();
   }
   return '';
+};
+
+/**
+ * Calculates a date 'days' ago from today and returns it in YYYY-MM-DD format.
+ * @param {number} days - The number of days to go back.
+ * @returns {string} The date in 'YYYY-MM-DD' format.
+ */
+export const getStartDateForDaysAgo = (days) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return formatDateToYYYYMMDD(date);
 };

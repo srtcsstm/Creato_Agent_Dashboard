@@ -146,6 +146,18 @@
     "noInvoiceUrl": "Bu kayıt için fatura URL'si mevcut değil.",
     "loadingFinancialData": "Finansal veriler yükleniyor."
   },
+  "paymentsPage": {
+    "title": "Ödemeler",
+    "paymentId": "Ödeme ID",
+    "invoiceId": "Fatura ID",
+    "clientId": "Müşteri ID",
+    "amount": "Tutar",
+    "status": "Durum",
+    "paymentDate": "Ödeme Tarihi",
+    "method": "Yöntem",
+    "noPaymentsFound": "Ödeme bulunamadı.",
+    "loadingPayments": "Ödemeler yükleniyor."
+  },
   "settingsPage": {
     "title": "Agent Ayarları",
     "apiToken": "API Anahtarınız",
@@ -171,7 +183,7 @@
     "manageInvoices": "Faturaları Yönet",
     "quickLinks": "Hızlı Bağlantılar",
     "goToUsersManagement": "Kullanıcı Yönetimine Git",
-    "goToOffersManagement": "Teklif Yönetimine Git",
+    "goToOffersManagement": "Go to Offers Management",
     "goToInvoicesManagement": "Fatura Yönetimine Git",
     "loadingAdminDashboard": "Yönetici paneli yükleniyor.",
     "errorLoadingAdminDashboard": "Yönetici paneli yüklenirken hata oluştu:"
@@ -357,8 +369,24 @@
   "myAccount": "Hesabım",
   "profile": "Profil",
   "inbox": "Gelen Kutusu",
-  "teamManagement": "Takım Yönetimi",
-  "teamSettings": "Takım Ayarları",
-  "roles": "Roller",
-  "integrations": "Entegrasyonlar"
+  "clientManagement": "Müşteri Yönetimi",
+  "profileSettingsPage": {
+    "title": "Profil Ayarları",
+    "personalInformation": "Kişisel Bilgiler",
+    "name": "Ad",
+    "email": "E-posta",
+    "company": "Şirket",
+    "phone": "Telefon",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "saveSuccess": "Profil ayarları başarıyla kaydedildi!",
+    "noProfileFound": "Profil bilgileri bulunamadı.",
+    "loadingProfile": "Profil yükleniyor...",
+    "errorUpdatingProfileNoId": "Hata: Profil güncellenemedi. Kullanıcı ID eksik.",
+    "errorSavingChanges": "Değişiklikler kaydedilirken hata oluştu:"
+  },
+  "unsupportedPage": {
+    "title": "Desteklenmeyen Özellik",
+    "message": "Üzgünüz, bu özellik şu anda geliştirme aşamasındadır ve mevcut değildir. Lütfen daha sonra tekrar deneyin.",
+    "goBackToDashboard": "Kontrol Paneline Geri Dön"
+  }
 }

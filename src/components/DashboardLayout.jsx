@@ -24,22 +24,23 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ChatIcon from '@mui/icons-material/Chat';
 import CallIcon from '@mui/icons-material/Call';
 import PeopleIcon from '@mui/icons-material/People';
-import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings'; // Still used for general settings icon
 import LogoutIcon from '@mui/icons-material/Logout';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import DescriptionIcon from '@mui/icons-material/Description'; // For Proposals
+import ReceiptIcon from '@mui/icons-material/Receipt'; // For Invoices
 
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
-import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
-import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'; // For Payments
+
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-import { LayoutDashboard, UserCog, Settings as LucideSettings, LogOut, Menu as LucideMenu, ChevronLeft as LucideChevronLeft } from "lucide-react";
+import { LayoutDashboard, UserCog, Settings as LucideSettings, LogOut } from "lucide-react";
 
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -114,9 +115,11 @@ function DashboardLayout() {
     '/conversations': t('conversationsPage.title'),
     '/calls': t('callsPage.title'),
     '/leads': t('leadsPage.title'),
-    '/settings': t('settingsPage.title'),
     '/proposals': t('proposalsPage.title'),
     '/invoices': t('invoicesPage.invoices'),
+    '/payments': t('paymentsPage.title'),
+    '/settings': t('settingsPage.title'), // Agent Settings page
+    '/profile-settings': t('profileSettingsPage.title'), // Profile Settings page
     '/admin': t('adminDashboardPage.title'),
     '/admin/users': t('adminUsersPage.title'),
     '/admin/offers': t('adminOffersPage.title'),
@@ -196,6 +199,20 @@ function DashboardLayout() {
         <PeopleIcon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
+    {
+      label: t('proposalsPage.title'),
+      href: "/proposals",
+      icon: (
+        <DescriptionIcon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: t('invoicesPage.invoices'),
+      href: "/invoices",
+      icon: (
+        <ReceiptIcon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
   ];
 
   return (
@@ -228,8 +245,8 @@ function DashboardLayout() {
           <div>
             <SidebarLink
               link={{
-                label: t('settingsPage.title'),
-                href: "/settings",
+                label: t('profileSettingsPage.title'), // Changed to Profile Settings
+                href: "/profile-settings", // Link to Profile Settings page
                 icon: (
                   <LucideSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
                 ),
@@ -378,14 +395,14 @@ function DashboardLayout() {
                     {t('myAccount')}
                   </Typography>
                   <MenuItem
-                    onClick={() => handleMenuItemClick('/profile')}
+                    onClick={() => handleMenuItemClick('/profile-settings')}
                     sx={{
-                      backgroundColor: theme.palette.action.selected,
+                      backgroundColor: location.pathname === '/profile-settings' ? theme.palette.action.selected : 'transparent',
                       borderRadius: '6px',
                       mx: 1,
                       my: 0.5,
                       '&:hover': {
-                        backgroundColor: theme.palette.action.selected,
+                        backgroundColor: theme.palette.action.hover,
                       },
                       '&.Mui-selected': {
                         backgroundColor: theme.palette.action.selected,
@@ -403,7 +420,7 @@ function DashboardLayout() {
                       ⇧⌘P
                     </Typography>
                   </MenuItem>
-                  <MenuItem onClick={() => handleMenuItemClick('/inbox')}
+                  <MenuItem onClick={() => handleMenuItemClick('/dashboard?tab=notifications')}
                     sx={{ borderRadius: '6px', mx: 1, my: 0.5 }}
                   >
                     <ListItemIcon sx={{ minWidth: 36 }}>
@@ -414,52 +431,40 @@ function DashboardLayout() {
                       ⌘I
                     </Typography>
                   </MenuItem>
-                  <MenuItem onClick={() => handleMenuItemClick('/settings')}
-                    sx={{ borderRadius: '6px', mx: 1, my: 0.5 }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <SettingsIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t('settingsPage.title')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                      ⌘S
-                    </Typography>
-                  </MenuItem>
+                  {/* Agent Settings removed from here */}
 
                   <Divider sx={{ borderColor: theme.palette.divider, my: 1 }} />
 
-                  {/* Team Management Section */}
+                  {/* Client Management Section */}
                   <Typography variant="overline" sx={{ px: 2, pt: 0.5, pb: 0.5, display: 'block', color: theme.palette.text.secondary }}>
-                    {t('teamManagement')}
+                    {t('clientManagement')}
                   </Typography>
-                  <MenuItem onClick={() => handleMenuItemClick('/admin/team-settings')}
+                  <MenuItem onClick={() => handleMenuItemClick('/invoices')}
                     sx={{ borderRadius: '6px', mx: 1, my: 0.5 }}
                   >
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      <GroupOutlinedIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
+                      <ReceiptIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
                     </ListItemIcon>
-                    <ListItemText primary={t('teamSettings')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
+                    <ListItemText primary={t('invoicesPage.invoices')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
                     <ChevronRightIcon fontSize="small" sx={{ ml: 2, color: theme.palette.text.secondary }} />
                   </MenuItem>
-                  <MenuItem onClick={() => handleMenuItemClick('/admin/roles')}
+                  <MenuItem onClick={() => handleMenuItemClick('/proposals')}
                     sx={{ borderRadius: '6px', mx: 1, my: 0.5 }}
                   >
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      <SecurityOutlinedIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
+                      <DescriptionIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
                     </ListItemIcon>
-                    <ListItemText primary={t('roles')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
+                    <ListItemText primary={t('proposalsPage.title')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
                     <ChevronRightIcon fontSize="small" sx={{ ml: 2, color: theme.palette.text.secondary }} />
                   </MenuItem>
-                  <MenuItem onClick={() => handleMenuItemClick('/admin/integrations')}
+                  <MenuItem onClick={() => handleMenuItemClick('/payments')}
                     sx={{ borderRadius: '6px', mx: 1, my: 0.5 }}
                   >
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      <WidgetsOutlinedIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
+                      <AccountBalanceWalletIcon fontSize="small" sx={{ color: theme.palette.text.primary }} />
                     </ListItemIcon>
-                    <ListItemText primary={t('integrations')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
-                    <Badge badgeContent={5} color="error" sx={{ ml: 2 }}>
-                      <Box component="span" sx={{ width: 24, height: 24 }} />
-                    </Badge>
+                    <ListItemText primary={t('paymentsPage.title')} primaryTypographyProps={{ color: theme.palette.text.primary }} />
+                    <ChevronRightIcon fontSize="small" sx={{ ml: 2, color: theme.palette.text.secondary }} />
                   </MenuItem>
 
                   <Divider sx={{ borderColor: theme.palette.divider, my: 1 }} />

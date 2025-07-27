@@ -11,6 +11,9 @@ import LeadsPage from './pages/LeadsPage';
 import SettingsPage from './pages/SettingsPage';
 import ProposalsPage from './pages/ProposalsPage';
 import InvoicesPage from './pages/InvoicesPage';
+import PaymentsPage from './pages/PaymentsPage';
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import UnsupportedPage from './pages/UnsupportedPage';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UsersPage from './pages/admin/users/UsersPage';
@@ -39,6 +42,9 @@ function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="proposals" element={<ProposalsPage />} />
         <Route path="invoices" element={<InvoicesPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
+        <Route path="profile-settings" element={<ProfileSettingsPage />} />
+        <Route path="agent-settings-unsupported" element={<UnsupportedPage />} />
       </Route>
 
       {/* Admin Panel Routes */}

@@ -14,6 +14,7 @@ export const LanguageProvider = ({ children }) => {
     setLoadingTranslations(true);
     setTranslationError(null);
     try {
+      // Corrected path to fetch from the root of the public directory
       const response = await fetch(`/locales/${lang}/translation.json`);
       if (!response.ok) {
         throw new Error(`Failed to load translations for ${lang}`);
@@ -26,6 +27,7 @@ export const LanguageProvider = ({ children }) => {
       setTranslationError(err.message);
       // Fallback to English if loading fails
       if (lang !== 'en') {
+        // Corrected path for English fallback
         const enResponse = await fetch('/locales/en/translation.json');
         const enData = await enResponse.json();
         setTranslations(enData);

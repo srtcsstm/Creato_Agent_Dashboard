@@ -43,6 +43,7 @@ const AppInput = (props: InputProps) => {
         {isHovering && (
           <>
             <div
+              key="top-blur" // Added unique key
               // Removed rounded-t-md and adjusted width to extend slightly beyond input
               className="absolute pointer-events-none top-0 left-[-2px] w-[calc(100%+4px)] h-[2px] z-20 overflow-hidden"
               style={{
@@ -50,6 +51,7 @@ const AppInput = (props: InputProps) => {
               }}
             />
             <div
+              key="bottom-blur" // Added unique key
               // Removed rounded-b-md and adjusted width to extend slightly beyond input
               className="absolute pointer-events-none bottom-0 left-[-2px] w-[calc(100%+4px)] h-[2px] z-20 overflow-hidden"
               style={{

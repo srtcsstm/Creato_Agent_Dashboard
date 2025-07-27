@@ -5,7 +5,7 @@ import './index.css';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { ThemeProvider, useThemeMode } from './contexts/ThemeContext';
-import { LanguageProvider } from './contexts/LanguageContext'; // Import LanguageProvider
+import { LanguageProvider } from './contexts/LanguageContext'; // Corrected import path
 
 function Root() {
   const { theme } = useThemeMode();

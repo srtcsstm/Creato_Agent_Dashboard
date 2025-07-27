@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #101214;
+  --color-surface: #161A1D;
+  --color-surface-rgb: 22, 26, 29; /* RGB values for #161A1D */
+  --color-muted-surface: #1D2125;
+  --color-border: #2C333A;
+  --color-text-secondary: #596773;
+  --color-text-primary: #C7D1DB;
+  --color-heading: #DEE4EA;
+  --spacing-6: 1.5rem;
+  --rounded-lg: 0.5rem;
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --color-text-primary-rgb: 199, 209, 219;
+  --color-bg-2: #C7D1DB;
+}
+
+.dark {
+  --color-bg: #101214;
+  --color-surface: #161A1D;
+  --color-surface-rgb: 22, 26, 29; /* RGB values for #161A1D */
+  --color-muted-surface: #1D2125;
+  --color-border: #2C333A;
+  --color-text-secondary: #A4A5AA; /* Adjusted for better visibility in dark mode */
+  --color-text-primary: #C7D1DB;
+  --color-heading: #DEE4EA;
+  --color-bg-2: #C7D1DB;
+  --color-text-primary-rgb: 199, 209, 219;
+}
+
+/* Existing Material-UI related styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom card styles for the login page */
+.card {
+  /* Apply semi-transparent background to the card itself */
+  background-color: rgba(var(--color-surface-rgb), 0.8);
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden; /* Keep overflow hidden for the card to clip its children */
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* background-color is now handled by the .card parent */
+  padding: 20px;
+}
+
+.social-container a {
+  color: var(--color-text-primary);
+}
+
+.social-container a:hover {
+  color: var(--color-bg);
+}

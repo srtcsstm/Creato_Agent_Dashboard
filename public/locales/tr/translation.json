@@ -1,0 +1,36 @@
+{
+  "dashboard": {
+    "title": "Kontrol Paneli",
+    "overview": "Genel Bakış",
+    "analytics": "Analizler",
+    "reports": "Raporlar",
+    "notifications": "Bildirimler",
+    "totalMessages": "Toplam Mesaj",
+    "totalCalls": "Toplam Çağrı",
+    "leadsCaptured": "Toplanan Lead",
+    "outstandingPaymentAmount": "Bekleyen Ödeme",
+    "totalOffers": "Toplam Teklif",
+    "dailyMessageCount": "Günlük Mesaj Sayısı",
+    "dailyCallCount": "Günlük Çağrı Sayısı",
+    "recentInteractions": "Son Görüşmeler",
+    "recentProposals": "Son Teklifler",
+    "noCallData": "Henüz çağrı verisi yok",
+    "increase": "Artış",
+    "decrease": "Azalış"
+  },
+  "common": {
+    "logout": "Çıkış Yap"
+  },
+  "settingsPage": {
+    "title": "Ayarlar"
+  },
+  "conversationsPage": {
+    "title": "Mesajlar"
+  },
+  "callsPage": {
+    "title": "Çağrı Kayıtları"
+  },
+  "leadsPage": {
+    "title": "Toplanan Leadler"
+  }
+}

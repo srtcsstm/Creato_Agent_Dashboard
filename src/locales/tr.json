@@ -1,7 +1,6 @@
 {
   "dashboard": {
     "title": "Kontrol Paneli",
-    "analytics": "Analizler",
     "dashboards": "Panolar",
     "overview": "Genel Bakış",
     "totalRevenue": "Toplam Gelir",
@@ -23,7 +22,7 @@
     "totalMessages": "Toplam Mesaj Sayısı",
     "totalCalls": "Toplam Çağrı Sayısı",
     "totalCallDuration": "Toplam Çağrı Süresi (dk)",
-    "leadsCaptured": "Potansiyel Müşteriler",
+    "leadsCaptured": "Toplanan Lead Sayısı",
     "increase": "Artış",
     "decrease": "Azalış",
     "faster": "Daha Hızlı",
@@ -369,5 +368,24 @@
     "last60Days": "Son 60 Gün",
     "last90Days": "Son 90 Gün",
     "lastXDays": "Son {count} Gün"
+  },
+  "profileSettingsPage": {
+    "title": "Profil Ayarları",
+    "personalInformation": "Kişisel Bilgiler",
+    "name": "Ad",
+    "email": "E-posta",
+    "company": "Şirket",
+    "phone": "Telefon",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "saveSuccess": "Profil ayarları başarıyla kaydedildi!",
+    "noProfileFound": "Bu müşteri ID için profil bilgisi bulunamadı.",
+    "loadingProfile": "Profil yükleniyor...",
+    "errorUpdatingProfileNoId": "Hata: Profil güncellenemedi. Kullanıcı ID eksik.",
+    "errorSavingChanges": "Değişiklikler kaydedilirken hata oluştu:"
+  },
+  "unsupportedPage": {
+    "title": "Desteklenmeyen Özellik",
+    "message": "Üzgünüz, bu özellik şu anda geliştirme aşamasındadır ve kullanılamamaktadır. Lütfen daha sonra tekrar deneyin.",
+    "goBackToDashboard": "Kontrol Paneline Geri Dön"
   }
 }

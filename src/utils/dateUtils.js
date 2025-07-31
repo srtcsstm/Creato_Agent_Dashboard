@@ -138,6 +138,8 @@ export const formatDateToISOString = (dateInput) => {
  */
 export const getStartDateForDaysAgo = (days) => {
   const date = new Date();
-  date.setDate(date.getDate() - days);
-  return formatDateToYYYYMMDD(date);
+  // To include today, we subtract days - 1. If days is 1, we subtract 0.
+  date.setDate(date.getDate() - (days - 1));
+  // Ensure it's UTC midnight for consistent comparison
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString().split('T')[0];
 };

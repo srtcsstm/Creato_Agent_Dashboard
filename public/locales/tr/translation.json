@@ -115,7 +115,7 @@
     "interest": "İlgi Alanı",
     "timestamp": "Zaman Damgası",
     "noLeadsFound": "Potansiyel müşteri bulunamadı.",
-    "loadingLeads": "Potansiyel müşteriler yükleniyor...",
+    "loadingLeads": "Potansiyel müşteriler yükleniyor.",
     "noLeadsToExport": "Aktarılacak potansiyel müşteri yok.",
     "browserNotSupportDownload": "Tarayıcınız doğrudan dosya indirmeyi desteklemiyor. Lütfen verileri manuel olarak kopyalayın."
   },
@@ -369,5 +369,24 @@
     "last60Days": "Son 60 Gün",
     "last90Days": "Son 90 Gün",
     "lastXDays": "Son {count} Gün"
+  },
+  "profileSettingsPage": {
+    "title": "Profil Ayarları",
+    "personalInformation": "Kişisel Bilgiler",
+    "name": "Ad",
+    "email": "E-posta",
+    "company": "Şirket",
+    "phone": "Telefon",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "saveSuccess": "Profil ayarları başarıyla kaydedildi!",
+    "noProfileFound": "Bu müşteri ID için profil bilgisi bulunamadı.",
+    "loadingProfile": "Profil yükleniyor...",
+    "errorUpdatingProfileNoId": "Hata: Profil güncellenemedi. Kullanıcı ID eksik.",
+    "errorSavingChanges": "Değişiklikler kaydedilirken hata oluştu:"
+  },
+  "unsupportedPage": {
+    "title": "Desteklenmeyen Özellik",
+    "message": "Üzgünüz, bu özellik şu anda geliştirme aşamasındadır ve kullanılamamaktadır. Lütfen daha sonra tekrar deneyin.",
+    "goBackToDashboard": "Kontrol Paneline Geri Dön"
   }
 }

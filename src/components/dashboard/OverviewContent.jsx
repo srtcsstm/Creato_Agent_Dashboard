@@ -57,6 +57,9 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
       const endDate = formatDateToYYYYMMDD(new Date());
       const startDate = getStartDateForDaysAgo(selectedDays);
 
+      console.log(`[OverviewContent] Current Client ID: ${clientId}`);
+      console.log(`[OverviewContent] Fetching data for client: ${clientId}, from ${startDate} to ${endDate} (selectedDays: ${selectedDays})`);
+
       try {
         // Pass selectedDays to fetchNocoDBData for conditional filtering logic
         const messages = await fetchNocoDBData('messages', clientId, { startDate, endDate, selectedDays });
@@ -65,11 +68,11 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
         const offers = await fetchNocoDBData('offers', clientId, { startDate, endDate, selectedDays });
         const invoices = await fetchNocoDBData('invoices', clientId, { startDate, endDate, selectedDays });
 
-        console.log("Overview - Fetched Messages:", messages);
-        console.log("Overview - Fetched Calls:", calls);
-        console.log("Overview - Fetched Leads:", leads);
-        console.log("Overview - Fetched Offers:", offers);
-        console.log("Overview - Fetched Invoices:", invoices);
+        console.log("Overview - Fetched Messages (raw):", messages);
+        console.log("Overview - Fetched Calls (raw):", calls);
+        console.log("Overview - Fetched Leads (raw):", leads);
+        console.log("Overview - Fetched Offers (raw):", offers);
+        console.log("Overview - Fetched Invoices (raw):", invoices);
 
 
         // KPI Calculations
@@ -147,7 +150,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
 
         // Group calls by session_id (if calls have session_id, otherwise treat as individual)
         // For simplicity, treating calls as individual interactions for now if no session_id is present.
-        // If calls can be part of a session, similar grouping logic would apply.
+        // If calls can be part of a session, you'd need a session_id for calls too.
         const groupedCalls = calls.reduce((acc, call) => {
           const callTimestamp = parseDDMMYYYYHHMM(call.created_date || call.date);
           // Assuming calls might not have a session_id, or each call is a distinct interaction.
@@ -373,9 +376,20 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
         {/* Daily Message Count Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.dailyMessageCount')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.dailyMessageCount')}
+              </Typography>
+              {/* Manual Legend for Bar Chart */}
+              {messageSessionsData.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 10, height: 10, backgroundColor: theme.palette.primary.main, borderRadius: '2px' }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t('dashboard.messages')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
             <Box sx={{ height: 300, width: '100%' }}>
               {messageSessionsData.length > 0 ? (
                 <BarChart
@@ -386,7 +400,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
                     tickLabelStyle: { fill: theme.palette.text.secondary },
                   }]}
                   series={[
-                    { data: messageSessionsData.map(d => d.count), label: t('dashboard.messages'), color: theme.palette.primary.main },
+                    { data: messageSessionsData.map(d => d.count), color: theme.palette.primary.main },
                   ]}
                   height={300}
                   margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
@@ -409,9 +423,20 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
         {/* Daily Call Count Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.dailyCallCount')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.dailyCallCount')}
+              </Typography>
+              {/* Manual Legend for Bar Chart */}
+              {callSessionsData.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 10, height: 10, backgroundColor: theme.palette.info.main, borderRadius: '2px' }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t('dashboard.calls')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
             <Box sx={{ height: 300, width: '100%' }}>
               {callSessionsData.length > 0 ? (
                 <BarChart
@@ -422,7 +447,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
                     tickLabelStyle: { fill: theme.palette.text.secondary },
                   }]}
                   series={[
-                    { data: callSessionsData.map(d => d.count), label: t('dashboard.calls'), color: theme.palette.info.main },
+                    { data: callSessionsData.map(d => d.count), color: theme.palette.info.main },
                   ]}
                   height={300}
                   margin={{ top: 10, bottom: 30, left: 40, right: 10 }}

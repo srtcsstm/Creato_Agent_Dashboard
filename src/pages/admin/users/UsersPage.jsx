@@ -33,7 +33,7 @@ function UsersPage() {
   const [error, setError] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = {
+  const [formData, setFormData] = useState({ // Corrected: Initialized with useState
     id: '',
     name: '',
     email: '',
@@ -42,7 +42,7 @@ function UsersPage() {
     plan: '',
     client_id: '',
     created_date: '', // Add created_date to form data
-  };
+  });
   const [openConfirm, setOpenConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);

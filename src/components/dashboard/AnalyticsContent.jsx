@@ -8,12 +8,14 @@ import {
   Alert,
   useTheme,
 } from '@mui/material';
-import { BarChart, PieChart } from '@mui/x-charts';
+import { BarChart } from '@mui/x-charts';
+import { Pie, Cell, PieChart as RechartsPieChart, LabelList } from 'recharts'; // Import LabelList for pie chart labels
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'; // Import InfoOutlinedIcon
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchNocoDBData } from '../../api/nocodb';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { parseDDMMYYYYHHMM, formatDateToYYYYMMDD, getStartDateForDaysAgo } from '../../utils/dateUtils';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '../ui/pie-chart'; // Import ChartConfig
 
 function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
   const { clientId } = useAuth();
@@ -34,6 +36,9 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
       const endDate = formatDateToYYYYMMDD(new Date());
       const startDate = getStartDateForDaysAgo(selectedDays);
 
+      console.log(`[AnalyticsContent] Current Client ID: ${clientId}`);
+      console.log(`[AnalyticsContent] Fetching data for client: ${clientId}, from ${startDate} to ${endDate} (selectedDays: ${selectedDays})`);
+
       try {
         // Pass selectedDays to fetchNocoDBData for conditional filtering logic
         const messages = await fetchNocoDBData('messages', clientId, { startDate, endDate, selectedDays });
@@ -41,10 +46,10 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
         const offers = await fetchNocoDBData('offers', clientId, { startDate, endDate, selectedDays });
         const leads = await fetchNocoDBData('leads', clientId, { startDate, endDate, selectedDays });
 
-        console.log("Analytics - Fetched Messages:", messages);
-        console.log("Analytics - Fetched Calls:", calls);
-        console.log("Analytics - Fetched Offers:", offers);
-        console.log("Analytics - Fetched Leads:", leads);
+        console.log("Analytics - Fetched Messages (raw):", messages);
+        console.log("Analytics - Fetched Calls (raw):", calls);
+        console.log("Analytics - Fetched Offers (raw):", offers);
+        console.log("Analytics - Fetched Leads (raw):", leads);
 
 
         // Message Channel Usage (Pie Chart)
@@ -52,18 +57,29 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
           acc[msg.channel] = (acc[msg.channel] || 0) + 1;
           return acc;
         }, {});
-        setMessageChannelData(Object.keys(channelCounts).map((channel, index) => ({
+        console.log("Analytics - Calculated channelCounts:", channelCounts);
+
+        const distinctColors = [theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.success.main, theme.palette.error.main];
+        const processedMessageChannelData = Object.keys(channelCounts).map((channel, index) => ({
           id: index,
           value: channelCounts[channel],
           label: channel,
-          color: theme.palette.primary.light, // Example color, can be customized
-        })));
-        console.log("Analytics - Message Channel Data:", messageChannelData);
+          color: distinctColors[index % distinctColors.length],
+        }));
+        setMessageChannelData(processedMessageChannelData);
+        console.log("Analytics - Message Channel Data (processed for PieChart):", processedMessageChannelData);
+        if (processedMessageChannelData.length === 0) {
+          console.warn("messageChannelData is empty, PieChart will not render.");
+        } else {
+          const totalValue = processedMessageChannelData.reduce((sum, item) => sum + item.value, 0);
+          if (totalValue === 0) {
+            console.warn("All values in messageChannelData are zero, PieChart will not render.");
+          }
+        }
 
 
         // Total Call Duration (Bar Chart)
         const dailyCallDurations = calls.reduce((acc, call) => {
-          // Use 'created_date' for filtering if available, fallback to 'date'
           const dateField = call.created_date || call.date;
           const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(dateField));
           if (date) {
@@ -76,7 +92,7 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
           date,
           duration: dailyCallDurations[date],
         })));
-        console.log("Analytics - Call Duration Data:", callDurationData);
+        console.log("Analytics - Call Duration Data (processed):", callDurationData);
 
 
         // Offer Acceptance Rate (Pie Chart)
@@ -94,7 +110,7 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
         } else {
           setOfferConversionData([]);
         }
-        console.log("Analytics - Offer Conversion Data:", offerConversionData);
+        console.log("Analytics - Offer Conversion Data (processed):", offerConversionData);
 
 
         // Leads by Interest (Bar Chart)
@@ -107,11 +123,12 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
           interest,
           count: interestCounts[interest],
         })));
-        console.log("Analytics - Leads by Interest Data:", leadsByInterestData);
+        console.log("Analytics - Leads by Interest Data (processed):", leadsByInterestData);
 
 
       } catch (err) {
         setError(err.message);
+        console.error("AnalyticsContent data loading error:", err);
       } finally {
         setLoading(false);
       }
@@ -120,7 +137,7 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
     if (clientId) {
       loadAnalyticsData();
     }
-  }, [clientId, selectedDays, theme.palette.primary.light, theme.palette.success.main, theme.palette.error.main, theme.palette.warning.main, t]);
+  }, [clientId, selectedDays, theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.success.main, theme.palette.error.main, t]);
 
   if (loading) {
     return (
@@ -142,45 +159,77 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
     </Box>
   );
 
+  // Chart config for the new PieChart component
+  const messageChannelChartConfig = messageChannelData.reduce((acc, item) => {
+    acc[item.label] = {
+      label: item.label,
+      color: item.color,
+    };
+    return acc;
+  }, {}); // Removed as ChartConfig
+
+  const offerConversionChartConfig = offerConversionData.reduce((acc, item) => {
+    acc[item.label] = {
+      label: item.label,
+      color: item.color,
+    };
+    return acc;
+  }, {}); // Removed as ChartConfig
+
+
   return (
     <Box>
       <Grid container spacing={3}>
         {/* Message Channel Usage Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.messageChannelUsage')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.messageChannelUsage')}
+              </Typography>
+              {/* Manual Legend for Pie Chart */}
+              {messageChannelData.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {messageChannelData.map((item) => (
+                    <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Box sx={{ width: 10, height: 10, backgroundColor: item.color, borderRadius: '2px' }} />
+                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                        {item.label}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', height: 300 }}>
               {messageChannelData.length > 0 ? (
-                <PieChart
-                  series={[
-                    {
-                      data: messageChannelData,
-                      innerRadius: 60,
-                      outerRadius: 100,
-                      paddingAngle: 5,
-                      cornerRadius: 5,
-                      startAngle: -90,
-                      endAngle: 270,
-                      cx: 150,
-                      cy: 150,
-                    },
-                  ]}
-                  height={300}
-                  width={300}
-                  slotProps={{
-                    legend: {
-                      direction: 'column',
-                      position: { vertical: 'middle', horizontal: 'right' },
-                      itemMarkWidth: 10,
-                      itemMarkHeight: 10,
-                      labelStyle: {
-                        fill: theme.palette.text.primary,
-                      },
-                    },
-                  }}
-                />
+                <ChartContainer
+                  config={messageChannelChartConfig}
+                  width="100%"
+                  height="100%"
+                  className="mx-auto"
+                >
+                  <RechartsPieChart>
+                    <ChartTooltip
+                      content={<ChartTooltipContent nameKey="label" hideLabel />}
+                    />
+                    <Pie
+                      data={messageChannelData}
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      cornerRadius={5}
+                      startAngle={-90}
+                      endAngle={270}
+                      dataKey="value"
+                      nameKey="label"
+                    >
+                      {messageChannelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </RechartsPieChart>
+                </ChartContainer>
               ) : (
                 <NoDataDisplay message={t('dashboard.noChannelData')} />
               )}
@@ -191,9 +240,20 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
         {/* Total Call Duration Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.totalCallDuration')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.totalCallDuration')}
+              </Typography>
+              {/* Manual Legend for Bar Chart */}
+              {callDurationData.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 10, height: 10, backgroundColor: theme.palette.secondary.main, borderRadius: '2px' }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t('dashboard.minutes')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
             <Box sx={{ height: 300, width: '100%' }}>
               {callDurationData.length > 0 ? (
                 <BarChart
@@ -204,7 +264,7 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
                     tickLabelStyle: { fill: theme.palette.text.secondary },
                   }]}
                   series={[
-                    { data: callDurationData.map(d => d.duration), label: t('dashboard.minutes'), color: theme.palette.secondary.main },
+                    { data: callDurationData.map(d => d.duration), color: theme.palette.secondary.main },
                   ]}
                   height={300}
                   margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
@@ -227,39 +287,53 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
         {/* Offer Acceptance Rate Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.offerAcceptanceRate')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.offerAcceptanceRate')}
+              </Typography>
+              {/* Manual Legend for Pie Chart */}
+              {offerConversionData.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {offerConversionData.map((item) => (
+                    <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Box sx={{ width: 10, height: 10, backgroundColor: item.color, borderRadius: '2px' }} />
+                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                        {item.label}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', height: 300 }}>
               {offerConversionData.length > 0 ? (
-                <PieChart
-                  series={[
-                    {
-                      data: offerConversionData,
-                      innerRadius: 60,
-                      outerRadius: 100,
-                      paddingAngle: 5,
-                      cornerRadius: 5,
-                      startAngle: -90,
-                      endAngle: 270,
-                      cx: 150,
-                      cy: 150,
-                    },
-                  ]}
-                  height={300}
-                  width={300}
-                  slotProps={{
-                    legend: {
-                      direction: 'column',
-                      position: { vertical: 'middle', horizontal: 'right' },
-                      itemMarkWidth: 10,
-                      itemMarkHeight: 10,
-                      labelStyle: {
-                        fill: theme.palette.text.primary,
-                      },
-                    },
-                  }}
-                />
+                <ChartContainer
+                  config={offerConversionChartConfig}
+                  width="100%"
+                  height="100%"
+                  className="mx-auto"
+                >
+                  <RechartsPieChart>
+                    <ChartTooltip
+                      content={<ChartTooltipContent nameKey="label" hideLabel />}
+                    />
+                    <Pie
+                      data={offerConversionData}
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      cornerRadius={5}
+                      startAngle={-90}
+                      endAngle={270}
+                      dataKey="value"
+                      nameKey="label"
+                    >
+                      {offerConversionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </RechartsPieChart>
+                </ChartContainer>
               ) : (
                 <NoDataDisplay message={t('dashboard.noOfferConversionData')} />
               )}
@@ -270,9 +344,20 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
         {/* Leads by Interest Chart */}
         <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 2 }}>
-              {t('dashboard.leadsByInterest')}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                {t('dashboard.leadsByInterest')}
+              </Typography>
+              {/* Manual Legend for Bar Chart */}
+              {leadsByInterestData.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 10, height: 10, backgroundColor: theme.palette.warning.main, borderRadius: '2px' }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t('dashboard.leads')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
             <Box sx={{ height: 300, width: '100%' }}>
               {leadsByInterestData.length > 0 ? (
                 <BarChart
@@ -283,7 +368,7 @@ function AnalyticsContent({ selectedDays }) { // Receive selectedDays prop
                     tickLabelStyle: { fill: theme.palette.text.secondary },
                   }]}
                   series={[
-                    { data: leadsByInterestData.map(d => d.count), label: t('dashboard.leads'), color: theme.palette.warning.main },
+                    { data: leadsByInterestData.map(d => d.count), color: theme.palette.warning.main },
                   ]}
                   height={300}
                   margin={{ top: 10, bottom: 30, left: 40, right: 10 }}

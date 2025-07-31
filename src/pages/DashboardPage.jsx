@@ -17,7 +17,7 @@ import { useDashboardFilter } from '../contexts/DashboardFilterContext'; // useD
 
 // Import the new content components
 import OverviewContent from '../components/dashboard/OverviewContent';
-import AnalyticsContent from '../components/dashboard/AnalyticsContent';
+// import AnalyticsContent from '../components/dashboard/AnalyticsContent.tsx'; // Kaldırıldı
 import ReportsContent from '../components/dashboard/ReportsContent';
 import NotificationsContent from '../components/dashboard/NotificationsContent';
 
@@ -56,7 +56,8 @@ function DashboardPage() {
   const { selectedDays, setSelectedDays } = useDashboardFilter(); // Context'ten selectedDays ve setSelectedDays al
   const theme = useTheme();
 
-  const tabIndexToParam = ['overview', 'analytics', 'reports', 'notifications'];
+  // 'analytics' sekmesi kaldırıldığı için indeksler güncellendi
+  const tabIndexToParam = ['overview', 'reports', 'notifications'];
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -113,21 +114,6 @@ function DashboardPage() {
             <MenuItem value={60}>{t('dateRanges.last60Days')}</MenuItem>
             <MenuItem value={90}>{t('dateRanges.last90Days')}</MenuItem>
           </Select>
-          {/* Takvim ikonu ve metni kaldırıldı, Select bileşeni yeterli */}
-          {/* <Button
-            variant="outlined"
-            startIcon={<CalendarTodayIcon />}
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              color: theme.palette.text.primary,
-              borderColor: theme.palette.divider,
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-              },
-            }}
-          >
-            {getDateRangeLabel()}
-          </Button> */}
         </Box>
       </Box>
 
@@ -155,9 +141,9 @@ function DashboardPage() {
           }}
         >
           <Tab label={t('dashboard.overview')} {...a11yProps(0)} />
-          <Tab label={t('dashboard.analytics')} {...a11yProps(1)} />
-          <Tab label={t('dashboard.reports')} {...a11yProps(2)} />
-          <Tab label={t('dashboard.notifications')} {...a11yProps(3)} />
+          {/* <Tab label={t('dashboard.analytics')} {...a11yProps(1)} /> */} {/* Kaldırıldı */}
+          <Tab label={t('dashboard.reports')} {...a11yProps(1)} /> {/* İndeks 2'den 1'e değişti */}
+          <Tab label={t('dashboard.notifications')} {...a11yProps(2)} /> {/* İndeks 3'ten 2'ye değişti */}
         </Tabs>
       </Box>
 
@@ -165,13 +151,11 @@ function DashboardPage() {
       <TabPanel value={value} index={0}>
         <OverviewContent selectedDays={selectedDays} />
       </TabPanel>
-      <TabPanel value={value} index={1}>
-        <AnalyticsContent selectedDays={selectedDays} />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
+      {/* AnalyticsContent kaldırıldı */}
+      <TabPanel value={value} index={1}> {/* İndeks 2'den 1'e değişti */}
         <ReportsContent />
       </TabPanel>
-      <TabPanel value={value} index={3}>
+      <TabPanel value={value} index={2}> {/* İndeks 3'ten 2'ye değişti */}
         <NotificationsContent selectedDays={selectedDays} />
       </TabPanel>
     </Box>

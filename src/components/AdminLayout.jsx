@@ -26,7 +26,10 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ChatIcon from '@mui/icons-material/Chat'; // Import for Messages
 import CallIcon from '@mui/icons-material/Call'; // Import for Calls
+import LogoutIcon from '@mui/icons-material/Logout'; // Import LogoutIcon
+
 import { useLanguage } from '../contexts/LanguageContext'; // Import useLanguage
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
 
 const drawerWidth = 240;
 const appBarHeight = 70;
@@ -38,6 +41,7 @@ function AdminLayout() {
   const location = useLocation();
   const theme = useTheme();
   const { currentLanguage, setLanguage, t } = useLanguage(); // Use language context
+  const { logout } = useAuth(); // Use auth context for logout
 
   const handleMobileDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -51,7 +55,12 @@ function AdminLayout() {
     setLanguage(event.target.value);
   };
 
-  const menuItems = [
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const mainMenuItems = [ // Renamed to mainMenuItems
     { text: t('adminDashboardPage.title'), icon: <DashboardIcon />, path: '/admin' },
     { text: t('adminUsersPage.title'), icon: <GroupIcon />, path: '/admin/users' },
     { text: t('adminOffersPage.title'), icon: <DescriptionIcon />, path: '/admin/offers' },
@@ -60,19 +69,21 @@ function AdminLayout() {
     { text: t('callsPage.title'), icon: <CallIcon />, path: '/admin/calls' },
   ];
 
+  const logoutItem = { text: t('common.logout'), icon: <LogoutIcon />, action: handleLogout }; // Separate logout item
+
   const currentPageTitle =
-    menuItems.find((item) => item.path === location.pathname)?.text || t('adminDashboardPage.title');
+    mainMenuItems.find((item) => item.path === location.pathname)?.text || t('adminDashboardPage.title');
 
   const drawer = (
-    <div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}> {/* Added flex column to push logout to bottom */}
       <Toolbar sx={{ justifyContent: 'center', height: appBarHeight, minHeight: `${appBarHeight}px !important`, backgroundColor: theme.palette.background.default }}>
         <Typography variant="h6" noWrap component="div" sx={{ color: 'text.primary', fontWeight: 600 }}>
           ADMIN PANEL
         </Typography>
       </Toolbar>
       <Divider sx={{ borderColor: theme.palette.divider }} />
-      <List sx={{ px: 1 }}>
-        {menuItems.map((item) => (
+      <List sx={{ px: 1, flexGrow: 1 }}> {/* flexGrow to push content up */}
+        {mainMenuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
               onClick={() => navigate(item.path)}
@@ -86,7 +97,18 @@ function AdminLayout() {
           </ListItem>
         ))}
       </List>
-    </div>
+      <Divider sx={{ borderColor: theme.palette.divider, my: 1 }} /> {/* Divider before logout */}
+      <List sx={{ px: 1 }}>
+        <ListItem disablePadding>
+          <ListItemButton onClick={logoutItem.action}>
+            <ListItemIcon>
+              {logoutItem.icon}
+            </ListItemIcon>
+            <ListItemText primary={logoutItem.text} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Box>
   );
 
   return (

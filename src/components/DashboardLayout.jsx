@@ -18,7 +18,7 @@ import {
   MenuItem,
   Avatar,
   Select,
-  Badge,
+  Badge, // Keep Badge for now if needed elsewhere, but not for NotificationPopover
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -36,7 +36,7 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'; // For Payments
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+// import NotificationsIcon from '@mui/icons-material/Notifications'; // Removed
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
@@ -48,8 +48,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from '../contexts/AuthContext';
 import { useThemeMode } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchNocoDBData } from '../api/nocodb';
-// import { useDashboardFilter } from '../contexts/DashboardFilterContext'; // Artık burada kullanılmıyor
+import { fetchNocoDBData, updateNocoDBData, deleteNocoDBData } from '../api/nocodb'; // Import updateNocoDBData and deleteNocoDBData
+import { NotificationPopover } from './ui/notification-popover'; // Import the new component
 
 const appBarHeight = 70;
 const sidebarWidthOpen = 240;
@@ -58,13 +58,12 @@ const sidebarWidthClosed = 60;
 function DashboardLayout() {
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [notifications, setNotifications] = useState([]); // State to hold notifications
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, clientId } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const { currentLanguage, setLanguage, t } = useLanguage();
-  // const { selectedDays, setSelectedDays } = useDashboardFilter(); // Header'dan kaldırıldı
   const theme = useTheme();
 
   const handleMenu = (event) => {
@@ -90,36 +89,73 @@ function DashboardLayout() {
     setLanguage(event.target.value);
   };
 
-  // const handleDaysChange = (event) => { // Header'dan kaldırıldığı için bu fonksiyon da kaldırıldı
-  //   setSelectedDays(event.target.value);
-  // };
+  const loadNotifications = async () => {
+    if (clientId) {
+      try {
+        const data = await fetchNocoDBData('notifications', clientId);
+        // Sort notifications by created_date in descending order
+        const sortedData = data.sort((a, b) => {
+          const dateA = new Date(a.created_date);
+          const dateB = new Date(b.created_date);
+          return dateB.getTime() - dateA.getTime();
+        });
+        setNotifications(sortedData);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+        setNotifications([]);
+      }
+    } else {
+      setNotifications([]);
+    }
+  };
 
   useEffect(() => {
-    const getUnreadCount = async () => {
-      if (clientId) {
-        console.log(`[DashboardLayout] Fetching all notifications for clientId: ${clientId}`);
-        try {
-          // Fetch ALL notifications for the client
-          const allNotifications = await fetchNocoDBData('notifications', clientId);
-          // Filter and count unread notifications client-side
-          const unread = allNotifications.filter(notif => notif.status === 'unread');
-          console.log(`[DashboardLayout] Fetched total notifications: ${allNotifications.length}, Unread count: ${unread.length}`);
-          setUnreadNotificationsCount(unread.length);
-        } catch (error) {
-          console.error("Failed to fetch notifications count:", error);
-          setUnreadNotificationsCount(0);
-        }
-      } else {
-        // If clientId is null, there are no client-specific notifications
-        setUnreadNotificationsCount(0);
-      }
-    };
-
-    getUnreadCount();
-    // Fetch unread count every minute
-    const interval = setInterval(getUnreadCount, 60000);
+    loadNotifications();
+    // Fetch notifications every minute
+    const interval = setInterval(loadNotifications, 60000);
     return () => clearInterval(interval);
   }, [clientId, location.pathname]);
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(notif => notif.status === 'unread');
+      await Promise.all(unreadNotifications.map(notif =>
+        updateNocoDBData('notifications', notif.id || notif.Id, { status: 'read' })
+      ));
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, status: 'read' })));
+    } catch (err) {
+      console.error("Tüm bildirimler okundu olarak işaretlenirken hata oluştu:", err);
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await updateNocoDBData('notifications', id, { status: 'read' });
+      setNotifications((prev) =>
+        prev.map((notif) => (notif.id === id || notif.Id === id ? { ...notif, status: 'read' } : notif))
+      );
+    } catch (err) {
+      console.error("Bildirim okundu olarak işaretlenirken hata oluştu:", err);
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    const notificationId = notification.id || notification.Id;
+    if (!notificationId) {
+      console.error("Bildirim ID'si bulunamadı:", notification);
+      return;
+    }
+
+    if (notification.status === 'unread') {
+      await handleMarkAsRead(notificationId);
+    }
+    if (notification.link && notification.link !== '#') {
+      navigate(notification.link);
+    } else {
+      // If no specific link, navigate to the notifications tab on the dashboard
+      navigate('/dashboard?tab=notifications');
+    }
+  };
 
 
   const routeTitles = {
@@ -339,38 +375,13 @@ function DashboardLayout() {
               <IconButton color="inherit" sx={{ display: { xs: 'none', sm: 'flex' } }}>
                 <SearchIcon />
               </IconButton>
-              <IconButton
-                color="inherit"
-                onClick={() => navigate('/dashboard?tab=notifications')}
-              >
-                <Badge badgeContent={unreadNotificationsCount} color="error" invisible={unreadNotificationsCount === 0}>
-                  <NotificationsIcon sx={{ color: unreadNotificationsCount > 0 ? theme.palette.error.main : theme.palette.text.secondary }} />
-                </Badge>
-              </IconButton>
-
-              {/* Date Range Selector - Moved to DashboardPage.jsx */}
-              {/* {location.pathname === '/dashboard' && (
-                <Select
-                  value={selectedDays}
-                  onChange={handleDaysChange}
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    '.MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.divider },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main },
-                    '.MuiSvgIcon-root': { color: theme.palette.text.secondary },
-                    backgroundColor: theme.palette.background.paper,
-                  }}
-                >
-                  <MenuItem value={1}>{t('dateRanges.lastDay')}</MenuItem>
-                  <MenuItem value={7}>{t('dateRanges.last7Days')}</MenuItem>
-                  <MenuItem value={10}>{t('dateRanges.last10Days')}</MenuItem>
-                  <MenuItem value={30}>{t('dateRanges.last30Days')}</MenuItem>
-                  <MenuItem value={60}>{t('dateRanges.last60Days')}</MenuItem>
-                  <MenuItem value={90}>{t('dateRanges.last90Days')}</MenuItem>
-                </Select>
-              )} */}
+              {/* Replaced Material-UI NotificationsIcon with NotificationPopover */}
+              <NotificationPopover
+                notifications={notifications}
+                onMarkAllAsRead={handleMarkAllAsRead}
+                onMarkAsRead={handleMarkAsRead}
+                onNotificationClick={handleNotificationClick}
+              />
 
               <Select
                 value={currentLanguage}

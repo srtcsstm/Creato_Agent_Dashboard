@@ -1,7 +1,6 @@
 {
   "dashboard": {
     "title": "Dashboard",
-    "analytics": "Analytics",
     "dashboards": "Dashboards",
     "overview": "Overview",
     "totalRevenue": "Total Revenue",
@@ -352,7 +351,7 @@
     "reportGeneratedSuccess": "Report generated successfully!"
   },
   "notificationsPage": {
-    "yourNotifications": "Your Notifications",
+    "yourNotifications": "Notifications",
     "unread": "Unread",
     "markAllAsRead": "Mark All as Read",
     "clearAll": "Clear All",
@@ -388,14 +387,5 @@
     "title": "Unsupported Feature",
     "message": "Sorry, this feature is currently under development and not available. Please try again later.",
     "goBackToDashboard": "Go Back to Dashboard"
-  },
-  "dateRanges": {
-    "lastDay": "Last 1 Day",
-    "last7Days": "Last 7 Days",
-    "last10Days": "Last 10 Days",
-    "last30Days": "Last 30 Days",
-    "last60Days": "Last 60 Days",
-    "last90Days": "Last 90 Days",
-    "lastXDays": "Last {count} Days"
   }
 }

@@ -30,26 +30,24 @@ export const fetchNocoDBData = async (tableName, clientId = null, options = {}) 
   const queryParams = new URLSearchParams();
   let conditions = []; // Koşulları tutacak dizi
 
-  // Client ID koşulu (sadece fetchNocoDBData'nın doğrudan çağrılarında kullanılır)
+  // Client ID koşulu
   if (clientId) {
     conditions.push(`(client_id,eq,${clientId})`);
   }
 
   // Tarih aralığı koşulu
+  // Tüm sorgularda 'created_date' sütununu kullanmak üzere güncellendi.
   const dateFilterField = 'created_date'; 
 
   if (options.startDate && options.endDate) {
     if (options.selectedDays === 1) {
+      // Tek gün için: (created_date,eq,exactDate,YYYY-MM-DD)
       conditions.push(`(${dateFilterField},eq,exactDate,${options.startDate})`);
     } else {
+      // Tarih aralığı için: (created_date,ge,exactDate,START) ve (created_date,le,exactDate,END)
       conditions.push(`(${dateFilterField},ge,exactDate,${options.startDate})`);
       conditions.push(`(${dateFilterField},le,exactDate,${options.endDate})`);
     }
-  }
-
-  // Options'tan gelen 'where' koşulunu ekle
-  if (options.where) {
-    conditions.push(options.where);
   }
 
   // Tüm koşulları '~and' ile birleştirerek tek bir 'where' parametresi oluştur
@@ -58,6 +56,7 @@ export const fetchNocoDBData = async (tableName, clientId = null, options = {}) 
   }
 
   // Pagination parameters
+  // Set a higher limit to fetch more records, up to NocoDB's maximum (default 1000)
   queryParams.append('limit', options.limit || 1000); 
   if (options.offset) {
     queryParams.append('offset', options.offset);
@@ -71,7 +70,7 @@ export const fetchNocoDBData = async (tableName, clientId = null, options = {}) 
   }
 
   const url = `${BASE_URL}/${tableId}/records?${queryParams.toString()}`;
-  console.log(`[NocoDB API] URL'den veri çekiliyor: ${url}`); // Log the full URL
+  console.log(`[NocoDB API] URL'den veri çekiliyor: ${url}`);
 
   try {
     const response = await fetch(url, {
@@ -90,7 +89,6 @@ export const fetchNocoDBData = async (tableName, clientId = null, options = {}) 
     }
 
     const data = await response.json();
-    console.log(`[NocoDB API] ${tableName} (ID: ${tableId}) için alınan veri:`, data.list); // Log the received data list
     return data.list || [];
   } catch (error) {
     console.error(`[NocoDB API] ${tableName} (ID: ${tableId}) tablosundan veri çekilirken hata oluştu:`, error);
@@ -134,10 +132,19 @@ export const createNocoDBData = async (tableName, data) => {
 
 export const updateNocoDBData = async (tableName, id, data) => {
   const tableId = getTableId(tableName);
+  // Swagger'a göre PATCH endpoint'i ID'yi URL yolunda beklemiyor,
+  // bunun yerine ID'yi istek gövdesinde bekliyor.
   const url = `${BASE_URL}/${tableId}/records`;
   
+  // Payload, güncellenecek kaydın ID'sini (NocoDB'nin beklediği şekilde 'Id' veya 'id')
+  // ve güncellenecek diğer alanları içermelidir.
+  // Önceki hatalara dayanarak 'Id' (büyük I) kullanmaya devam ediyoruz.
   const payload = { Id: id, ...data }; 
   
+  // Eğer gelen 'data' nesnesinde zaten 'id' veya 'Id' varsa, 
+  // payload'a iki kez eklenmemesi için kontrol edilebilir, 
+  // ancak mevcut durumda 'Id: id' ile birleştirme yeterli.
+
   console.log(`[NocoDB API] URL'de güncelleniyor: ${url} veri ile:`, payload);
 
   try {
@@ -167,7 +174,7 @@ export const updateNocoDBData = async (tableName, id, data) => {
 export const deleteNocoDBData = async (tableName, id) => {
   const tableId = getTableId(tableName);
   const url = `${BASE_URL}/${tableId}/records`;
-  const payload = { Id: id }; 
+  const payload = { Id: id }; // NocoDB'nin DELETE için Id beklediği varsayımıyla
 
   console.log(`[NocoDB API] URL'den siliniyor: ${url} veri ile:`, payload);
 
@@ -196,61 +203,27 @@ export const deleteNocoDBData = async (tableName, id) => {
 };
 
 // NocoDB'ye karşı kullanıcı kimlik bilgilerini doğrulamak için yeni fonksiyon
-export const verifyUserCredentials = async (clientId, passwordInput) => {
-  console.log(`[Auth] Kullanıcı kimlik bilgileri doğrulanıyor: Client ID: ${clientId}`);
+export const verifyUserCredentials = async (clientId, passwordHash) => {
   try {
-    // Sadece client_id ile kullanıcıyı çek
     const users = await fetchNocoDBData('users', null, {
-      where: `(client_id,eq,${clientId})`
+      where: `(client_id,eq,${clientId})~and(password_hash,eq,${passwordHash})`
     });
-    console.log("[Auth] verifyUserCredentials NocoDB yanıtı (client_id ile):", users);
-
-    if (users.length > 0) {
-      const user = users[0];
-      // Şifre kontrolünü JavaScript tarafında yap
-      if (user.password_hash === passwordInput) {
-        console.log("[Auth] Kullanıcı şifresi eşleşti.");
-        return user;
-      } else {
-        console.log("[Auth] Kullanıcı şifresi eşleşmedi.");
-        return null;
-      }
-    } else {
-      console.log("[Auth] Kullanıcı bulunamadı.");
-      return null;
-    }
+    return users.length > 0 ? users[0] : null; // Bulunursa kullanıcı nesnesini, aksi takdirde null döndür
   } catch (error) {
-    console.error("[Auth] Kullanıcı kimlik bilgileri doğrulanırken hata oluştu:", error);
+    console.error("Kullanıcı kimlik bilgileri doğrulanırken hata oluştu:", error);
     return null;
   }
 };
 
 // NocoDB'ye karşı yönetici kimlik bilgilerini doğrulamak için yeni fonksiyon
-export const verifyAdminCredentials = async (email, passwordInput) => {
-  console.log(`[Auth] Yönetici kimlik bilgileri doğrulanıyor: Email: ${email}`);
+export const verifyAdminCredentials = async (email, passwordHash) => {
   try {
-    // Sadece email ile yöneticiyi çek
     const admins = await fetchNocoDBData('admins', null, {
-      where: `(email,eq,${email})`
+      where: `(email,eq,${email})~and(password_hash,eq,${passwordHash})`
     });
-    console.log("[Auth] verifyAdminCredentials NocoDB yanıtı (email ile):", admins);
-
-    if (admins.length > 0) {
-      const admin = admins[0];
-      // Şifre kontrolünü JavaScript tarafında yap
-      if (admin.password_hash === passwordInput) {
-        console.log("[Auth] Yönetici şifresi eşleşti.");
-        return true;
-      } else {
-        console.log("[Auth] Yönetici şifresi eşleşmedi.");
-        return false;
-      }
-    } else {
-      console.log("[Auth] Yönetici bulunamadı.");
-      return false;
-    }
+    return admins.length > 0; // Yönetici bulunursa true, aksi takdirde false döndür
   } catch (error) {
-    console.error("[Auth] Yönetici kimlik bilgileri doğrulanırken hata oluştu:", error);
+    console.error("Yönetici kimlik bilgileri doğrulanırken hata oluştu:", error);
     return false;
   }
 };

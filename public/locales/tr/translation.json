@@ -56,7 +56,9 @@
     "rejected": "Reddedildi",
     "pending": "Beklemede",
     "leadsByInterest": "İlgi Alanına Göre Potansiyel Müşteriler",
-    "noLeadsByInterestData": "İlgi alanına göre potansiyel müşteri verisi mevcut değil."
+    "noLeadsByInterestData": "İlgi alanına göre potansiyel müşteri verisi mevcut değil.",
+    "totalSessions": "Toplam Oturum Sayısı",
+    "sessions": "Oturumlar"
   },
   "loginPage": {
     "title": "Agent Paneli",
@@ -145,6 +147,18 @@
     "download": "İndir",
     "noInvoiceUrl": "Bu kayıt için fatura URL'si mevcut değil.",
     "loadingFinancialData": "Finansal veriler yükleniyor."
+  },
+  "paymentsPage": {
+    "title": "Ödemeler",
+    "paymentId": "Ödeme ID",
+    "invoiceId": "Fatura ID",
+    "clientId": "Müşteri ID",
+    "amount": "Tutar",
+    "status": "Durum",
+    "paymentDate": "Ödeme Tarihi",
+    "method": "Yöntem",
+    "noPaymentsFound": "Ödeme bulunamadı.",
+    "loadingPayments": "Ödemeler yükleniyor."
   },
   "settingsPage": {
     "title": "Agent Ayarları",

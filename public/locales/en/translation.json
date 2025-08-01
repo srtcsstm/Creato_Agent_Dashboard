@@ -56,7 +56,9 @@
     "rejected": "Rejected",
     "pending": "Pending",
     "leadsByInterest": "Leads by Interest",
-    "noLeadsByInterestData": "No leads by interest data available."
+    "noLeadsByInterestData": "No leads by interest data available.",
+    "totalSessions": "Total Sessions",
+    "sessions": "Sessions"
   },
   "loginPage": {
     "title": "Agent Dashboard",

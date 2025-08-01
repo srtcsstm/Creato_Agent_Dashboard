@@ -281,7 +281,7 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
     case 'users': collection = mockUsers; break;
     case 'offers': collection = mockOffers; break;
     case 'invoices': collection = mockInvoices; break;
-    case 'messages': collection = mockMessages; break; // THIS IS THE TARGET TABLE
+    case 'messages': collection = mockMessages; break;
     case 'calls': collection = mockCalls; break;
     case 'dashboard_logs': collection = mockDashboardLogs; break;
     case 'leads': collection = mockLeads; break;
@@ -298,7 +298,7 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
   // Apply client_id filter first if present
   if (clientId) {
     filteredCollection = filteredCollection.filter(item => item.client_id === clientId);
-    console.log(`[mockFetch] After client_id filter (${clientId}): ${filteredCollection.length} items.`); // ADDED LOG
+    console.log(`[mockFetch] After client_id filter (${clientId}): ${filteredCollection.length} items.`);
   }
 
   // Apply date range filter
@@ -317,10 +317,10 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
       const endDateUTC = Date.UTC(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate());
 
       const isWithinRange = itemDateUTC >= startDateUTC && itemDateUTC <= endDateUTC;
-      // console.log(`[mockFetch] Item: ${item.id}, Date: ${itemDate.toISOString()}, Start: ${startDateObj.toISOString()}, End: ${endDateObj.toISOString()}, Within Range: ${isWithinRange}`); // Keep this for detailed debugging if needed
+      console.log(`[mockFetch] Item: ${item.id}, Date: ${itemDate.toISOString()}, Start: ${startDateObj.toISOString()}, End: ${endDateObj.toISOString()}, Within Range: ${isWithinRange}`);
       return isWithinRange;
     });
-    console.log(`[mockFetch] After date range filter (${options.startDate} to ${options.endDate}): ${filteredCollection.length} items.`); // ADDED LOG
+    console.log(`[mockFetch] After date range filter (${options.startDate} to ${options.endDate}): ${filteredCollection.length} items.`);
   }
 
   // Apply generic 'where' clause for filtering (more robust parsing)
@@ -349,7 +349,7 @@ export const mockFetch = async (tableName, clientId = null, options = {}) => {
           });
         }
         // Add more operators if needed (e.g., 'gt', 'lt', 'ne', 'like')
-        console.log(`[mockFetch] After '${field}' ${operator} '${cleanValue}' filter: ${filteredCollection.length} items.`); // ADDED LOG
+        console.log(`[mockFetch] After '${field}' ${operator} '${cleanValue}' filter: ${filteredCollection.length} items.`);
       }
     }
   }

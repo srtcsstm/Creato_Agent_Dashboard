@@ -3,7 +3,7 @@ import { fetchNocoDBData, createNocoDBData, updateNocoDBData, deleteNocoDBData }
 import { mockFetch, mockCreate, mockUpdate, mockDelete } from './adminMockData';
 
 // Set this to true to force mock data usage, false to try NocoDB first
-const FORCE_MOCK_DATA = false; // Changed to FALSE to use live data
+const FORCE_MOCK_DATA = true; // Changed to TRUE to use mock data
 
 const handleApiCall = async (apiCall, mockCall, tableName, ...args) => {
   if (FORCE_MOCK_DATA) {

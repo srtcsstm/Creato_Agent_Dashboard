@@ -30,6 +30,7 @@ import DescriptionIcon from '@mui/icons-material/Description'; // Total Offers
 import ChatIcon from '@mui/icons-material/Chat';
 import CallIcon from '@mui/icons-material/Call';
 import ForumIcon from '@mui/icons-material/Forum'; // For Total Sessions
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'; // For Total Call Duration
 
 function OverviewContent({ selectedDays }) { // Receive selectedDays prop
   const { clientId } = useAuth();
@@ -39,6 +40,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
     totalMessages: 0,
     totalCalls: 0,
     totalSessions: 0, // New metric
+    totalCallDuration: 0, // New metric for total call duration
     leadsCaptured: 0,
     outstandingPaymentAmount: 0,
     totalOffers: 0,
@@ -92,10 +94,15 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
         const uniqueSessionIds = new Set(messages.map(msg => msg.session_id));
         const totalSessions = uniqueSessionIds.size;
 
+        // Calculate Total Call Duration for KPI
+        const totalCallDurationMinutes = calls.reduce((sum, call) => sum + (parseFloat(call.duration_minutes) || 0), 0);
+
+
         setMetrics({
           totalMessages,
           totalCalls,
           totalSessions, // Set new metric
+          totalCallDuration: totalCallDurationMinutes.toFixed(0), // Set new metric for KPI
           leadsCaptured,
           outstandingPaymentAmount: outstandingPaymentAmount.toFixed(2),
           totalOffers,
@@ -157,7 +164,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
         console.log("Overview - Daily Call Counts Data:", dailyCallCountsData);
 
 
-        // Total Call Duration (Moved from AnalyticsContent)
+        // Total Call Duration (Moved from AnalyticsContent) - for chart
         const dailyCallDurations = calls.reduce((acc, call) => {
           const dateField = call.created_date || call.date;
           const date = formatDateToYYYYMMDD(parseDDMMYYYYHHMM(dateField));
@@ -171,7 +178,7 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
           date,
           duration: dailyCallDurations[date],
         })));
-        console.log("Overview - Call Duration Data (processed):", callDurationData);
+        console.log("Overview - Call Duration Data (processed for chart):", callDurationData);
 
 
         // Recent Interactions List (Messages & Calls) - REMOVED
@@ -336,13 +343,13 @@ function OverviewContent({ selectedDays }) { // Receive selectedDays prop
             <Card sx={{ p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', width: '100%' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                 <Typography variant="body2" color="text.secondary">{t('dashboard.totalCallDuration')}</Typography>
-                <AttachMoneyIcon sx={{ color: theme.palette.text.secondary }} />
+                <AccessAlarmIcon sx={{ color: theme.palette.text.secondary }} /> {/* Changed icon */}
               </Box>
               <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '1.8rem' }}>
-                ${metrics.outstandingPaymentAmount}
+                {metrics.totalCallDuration} {t('dashboard.minutes')} {/* Display minutes */}
               </Typography>
-              <Typography variant="caption" sx={{ color: 'error.main' }}>
-                -X% {t('dashboard.decrease')}
+              <Typography variant="caption" sx={{ color: 'success.main' }}>
+                +X% {t('dashboard.increase')}
               </Typography>
             </Card>
           </ButtonBase>

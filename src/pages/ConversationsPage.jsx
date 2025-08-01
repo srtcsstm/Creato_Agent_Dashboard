@@ -36,10 +36,10 @@ const style = {
   maxHeight: '90%',
   overflowY: 'auto',
   bgcolor: 'background.paper',
-  border: '2px solid #000', // This will be overridden by theme.palette.divider
+  // border: '2px solid #000', // This will be overridden by theme.palette.divider
   boxShadow: 24,
   p: 4,
-  borderRadius: 8, // Kenar yuvarlaklığı 12'den 8'e düşürüldü
+  borderRadius: 4, // Further reduced border radius for the modal
 };
 
 function ConversationsPage() {
@@ -234,44 +234,82 @@ function ConversationsPage() {
           <Typography id="conversation-details-title" variant="h6" component="h2" gutterBottom sx={{ color: 'text.primary' }}>
             {t('conversationsPage.conversationDetails')} (Session ID: {selectedSessionMessages && selectedSessionMessages[0]?.session_id})
           </Typography>
-          <List id="conversation-details-description">
+          <List id="conversation-details-description" sx={{ pt: 0 }}>
             {selectedSessionMessages && selectedSessionMessages.map((msg, index) => (
               <React.Fragment key={msg.id}>
-                <ListItem alignItems="flex-start">
-                  <ListItemText
-                    primary={
-                      <Typography
-                        sx={{ display: 'inline' }}
-                        component="span"
-                        variant="body2"
-                        color="text.secondary"
-                      >
-                        {formatDateToDDMMYYYYHHMM(msg.created_date || msg.timestamp)} - {msg.channel}
+                <ListItem
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start', // Default to left-aligned
+                    width: '100%',
+                    py: 1,
+                    px: 0,
+                  }}
+                >
+                  {/* Timestamp and Channel */}
+                  <Typography
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      mb: 1,
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    {formatDateToDDMMYYYYHHMM(msg.created_date || msg.timestamp)} - {msg.channel}
+                  </Typography>
+
+                  {/* User Message Bubble */}
+                  {msg.user_message && (
+                    <Box
+                      sx={{
+                        alignSelf: 'flex-end', // Right-align user message
+                        backgroundColor: theme.palette.primary.dark,
+                        color: theme.palette.getContrastText(theme.palette.primary.dark),
+                        borderRadius: '6px', // Adjusted from 10px
+                        borderBottomRightRadius: '2px', // Adjusted from 0
+                        p: 1.5,
+                        maxWidth: '80%',
+                        mb: 1,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {t('conversationsPage.userMessage')}:
                       </Typography>
-                    }
-                    secondary={
-                      <React.Fragment>
-                        <Typography
-                          sx={{ display: 'block', mt: 1 }}
-                          component="span"
-                          variant="body1"
-                          color="text.primary"
-                        >
-                          <strong>{t('conversationsPage.userMessage')}:</strong> {msg.user_message}
-                        </Typography>
-                        <Typography
-                          sx={{ display: 'block', mt: 0.5 }}
-                          component="span"
-                          variant="body1"
-                          color="text.primary"
-                        >
-                          <strong>{t('conversationsPage.aiResponse')}:</strong> {msg.ai_response}
-                        </Typography>
-                      </React.Fragment>
-                    }
-                  />
+                      <Typography variant="body2">
+                        {msg.user_message}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* AI Response Bubble */}
+                  {msg.ai_response && (
+                    <Box
+                      sx={{
+                        alignSelf: 'flex-start', // Left-align AI response
+                        backgroundColor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                        borderRadius: '6px', // Adjusted from 10px
+                        borderBottomLeftRadius: '2px', // Adjusted from 0
+                        p: 1.5,
+                        maxWidth: '80%',
+                        wordBreak: 'break-word',
+                        border: `1px solid ${theme.palette.divider}`, // Add border to AI bubble
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {t('conversationsPage.aiResponse')}:
+                      </Typography>
+                      <Typography variant="body2">
+                        {msg.ai_response}
+                      </Typography>
+                    </Box>
+                  )}
                 </ListItem>
-                {index < selectedSessionMessages.length - 1 && <Divider component="li" sx={{ borderColor: theme.palette.divider }} />}
+                {index < selectedSessionMessages.length - 1 && <Divider component="li" sx={{ borderColor: theme.palette.divider, my: 1 }} />}
               </React.Fragment>
             ))}
           </List>
